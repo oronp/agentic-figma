@@ -1,0 +1,6 @@
+node_modules/
+.cursor/
+.env
+dist/
+docs/
+/src/python_mcp/.venv/
