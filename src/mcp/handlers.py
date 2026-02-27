@@ -1,10 +1,4 @@
-"""MCP tool handler implementations for the Talk-to-Figma MCP server.
-
-Each handler corresponds to one MCP tool. The module imports shared
-infrastructure (send_command, join_channel, filter_figma_node, ok, err) from
-server.py at import time — this is safe because server.py imports this module
-only after those names are fully defined.
-"""
+"""MCP tool handler implementations for the Talk-to-Figma MCP server."""
 
 import asyncio
 import json
@@ -13,34 +7,30 @@ from typing import Any, Dict, List
 import mcp.types as types
 from mcp.types import ImageContent, TextContent
 
-# Imported from server after server-side definitions are in place.
-from .server import (  # noqa: E402
-    err,
-    filter_figma_node,
-    join_channel,
-    ok,
-    send_command,
-)
+from .utils import err, filter_figma_node, ok
+from .ws_client import FigmaClient
 
 
-async def handle_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent | ImageContent]:
+async def handle_tool(
+    name: str, arguments: Dict[str, Any], client: FigmaClient
+) -> List[TextContent | ImageContent]:
     """Dispatch an MCP tool call to the appropriate handler."""
     # ── Group A: Document & Selection ────────────────────────────────────────
     if name == "get_document_info":
         try:
-            result = await send_command("get_document_info")
+            result = await client.send_command("get_document_info")
             return ok(result)
         except Exception as e:
             return err(f"Error getting document info: {e}")
     elif name == "get_selection":
         try:
-            result = await send_command("get_selection")
+            result = await client.send_command("get_selection")
             return ok(result)
         except Exception as e:
             return err(f"Error getting selection: {e}")
     elif name == "read_my_design":
         try:
-            result = await send_command("read_my_design", {})
+            result = await client.send_command("read_my_design", {})
             return ok(result)
         except Exception as e:
             return err(f"Error reading design: {e}")
@@ -49,7 +39,7 @@ async def handle_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent 
             if not arguments or "nodeId" not in arguments:
                 return err("Missing required parameter: nodeId")
             node_id: str = arguments["nodeId"]
-            result = await send_command("get_node_info", {"nodeId": node_id})
+            result = await client.send_command("get_node_info", {"nodeId": node_id})
             return ok(filter_figma_node(result))
         except Exception as e:
             return err(f"Error getting node info: {e}")
@@ -59,7 +49,7 @@ async def handle_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent 
                 return err("Missing required parameter: nodeIds")
             node_ids: List[str] = arguments["nodeIds"]
             results = await asyncio.gather(
-                *[send_command("get_node_info", {"nodeId": nid}) for nid in node_ids],
+                *[client.send_command("get_node_info", {"nodeId": nid}) for nid in node_ids],
                 return_exceptions=True
             )
             filtered = [
@@ -73,13 +63,13 @@ async def handle_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent 
             return err(f"Error getting nodes info: {e}")
     elif name == "get_styles":
         try:
-            result = await send_command("get_styles")
+            result = await client.send_command("get_styles")
             return ok(result)
         except Exception as e:
             return err(f"Error getting styles: {e}")
     elif name == "get_local_components":
         try:
-            result = await send_command("get_local_components")
+            result = await client.send_command("get_local_components")
             return ok(result)
         except Exception as e:
             return err(f"Error getting local components: {e}")
@@ -90,7 +80,7 @@ async def handle_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent 
                 params["nodeId"] = arguments["nodeId"]
             if arguments and "includeCategories" in arguments:
                 params["includeCategories"] = arguments["includeCategories"]
-            result = await send_command("get_annotations", params)
+            result = await client.send_command("get_annotations", params)
             return ok(result)
         except Exception as e:
             return err(f"Error getting annotations: {e}")
@@ -99,7 +89,7 @@ async def handle_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent 
             if not arguments or "nodeIds" not in arguments:
                 return err("Missing required parameter: nodeIds")
             node_ids = arguments["nodeIds"]
-            result = await send_command("get_reactions", {"nodeIds": node_ids})
+            result = await client.send_command("get_reactions", {"nodeIds": node_ids})
             return ok(result)
         except Exception as e:
             return err(f"Error getting reactions: {e}")
@@ -122,7 +112,7 @@ async def handle_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent 
             parent_id = arguments.get("parentId")
             if parent_id is not None:
                 params["parentId"] = parent_id
-            result = await send_command("create_rectangle", params)
+            result = await client.send_command("create_rectangle", params)
             return ok(result)
         except Exception as e:
             return err(f"Error creating rectangle: {e}")
@@ -161,7 +151,7 @@ async def handle_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent 
                 val = arguments.get(opt_key)
                 if val is not None:
                     params[opt_key] = val
-            result = await send_command("create_frame", params)
+            result = await client.send_command("create_frame", params)
             return ok(result)
         except Exception as e:
             return err(f"Error creating frame: {e}")
@@ -184,7 +174,7 @@ async def handle_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent 
             parent_id = arguments.get("parentId")
             if parent_id is not None:
                 params["parentId"] = parent_id
-            result = await send_command("create_text", params)
+            result = await client.send_command("create_text", params)
             return ok(result)
         except Exception as e:
             return err(f"Error creating text: {e}")
@@ -200,7 +190,7 @@ async def handle_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent 
             y = arguments.get("y")
             if y is not None:
                 params["y"] = y
-            result = await send_command("create_component_instance", params)
+            result = await client.send_command("create_component_instance", params)
             return ok(result)
         except Exception as e:
             return err(f"Error creating component instance: {e}")
@@ -216,7 +206,7 @@ async def handle_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent 
             y = arguments.get("y")
             if y is not None:
                 params["y"] = y
-            result = await send_command("clone_node", params)
+            result = await client.send_command("clone_node", params)
             return ok(result)
         except Exception as e:
             return err(f"Error cloning node: {e}")
@@ -225,7 +215,7 @@ async def handle_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent 
             node_id = arguments.get("nodeId")
             if not node_id:
                 return err("delete_node requires nodeId")
-            await send_command("delete_node", {"nodeId": node_id})
+            await client.send_command("delete_node", {"nodeId": node_id})
             return ok({"deleted": node_id})
         except Exception as e:
             return err(f"Error deleting node: {e}")
@@ -234,7 +224,7 @@ async def handle_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent 
             node_ids = arguments.get("nodeIds")
             if not node_ids:
                 return err("delete_multiple_nodes requires nodeIds")
-            result = await send_command("delete_multiple_nodes", {"nodeIds": node_ids})
+            result = await client.send_command("delete_multiple_nodes", {"nodeIds": node_ids})
             return ok(result)
         except Exception as e:
             return err(f"Error deleting multiple nodes: {e}")
@@ -251,7 +241,7 @@ async def handle_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent 
                 return err("set_fill_color: r, g, b must be numbers in range 0-1")
             a_val = arguments.get("a")
             a = a_val if a_val is not None else 1
-            result = await send_command("set_fill_color", {
+            result = await client.send_command("set_fill_color", {
                 "nodeId": node_id,
                 "color": {"r": r, "g": g, "b": b, "a": a},
             })
@@ -274,7 +264,7 @@ async def handle_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent 
             a = a_val if a_val is not None else 1
             weight_val = arguments.get("weight")
             weight = weight_val if weight_val is not None else 1
-            result = await send_command("set_stroke_color", {
+            result = await client.send_command("set_stroke_color", {
                 "nodeId": node_id,
                 "color": {"r": r, "g": g, "b": b, "a": a},
                 "weight": weight,
@@ -291,7 +281,7 @@ async def handle_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent 
             if node_id is None or radius is None:
                 return err("set_corner_radius requires nodeId and radius")
             corners = arguments.get("corners")
-            result = await send_command("set_corner_radius", {
+            result = await client.send_command("set_corner_radius", {
                 "nodeId": node_id,
                 "radius": radius,
                 "corners": corners if corners is not None else [True, True, True, True],
@@ -307,7 +297,7 @@ async def handle_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent 
             text = arguments.get("text")
             if node_id is None or text is None:
                 return err("set_text_content requires nodeId and text")
-            result = await send_command("set_text_content", {"nodeId": node_id, "text": text})
+            result = await client.send_command("set_text_content", {"nodeId": node_id, "text": text})
             typed = result if isinstance(result, dict) else {}
             node_name = typed.get("name", node_id)
             return [TextContent(type="text", text=f'Updated text content of node "{node_name}" to "{text}"')]
@@ -323,7 +313,7 @@ async def handle_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent 
                 return err("set_multiple_text_contents requires text")
             if len(text) == 0:
                 return [TextContent(type="text", text="No text provided")]
-            result = await send_command("set_multiple_text_contents", {
+            result = await client.send_command("set_multiple_text_contents", {
                 "nodeId": node_id,
                 "text": text,
             })
@@ -349,7 +339,7 @@ async def handle_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent 
             fmt = fmt_val if fmt_val is not None else "PNG"
             scale_val = arguments.get("scale")
             scale = scale_val if scale_val is not None else 1
-            result = await send_command("export_node_as_image", {
+            result = await client.send_command("export_node_as_image", {
                 "nodeId": node_id,
                 "format": fmt,
                 "scale": scale,
@@ -376,7 +366,7 @@ async def handle_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent 
                 return err("move_node requires y")
             if not isinstance(x, (int, float)) or not isinstance(y, (int, float)):
                 return err("move_node: x and y must be numbers")
-            result = await send_command("move_node", {"nodeId": node_id, "x": x, "y": y})
+            result = await client.send_command("move_node", {"nodeId": node_id, "x": x, "y": y})
             typed = result if isinstance(result, dict) else {}
             node_name = typed.get("name", node_id)
             return [TextContent(type="text", text=f'Moved node "{node_name}" to position ({x}, {y})')]
@@ -395,7 +385,7 @@ async def handle_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent 
                 return err("resize_node requires height")
             if not isinstance(width, (int, float)) or not isinstance(height, (int, float)):
                 return err("resize_node: width and height must be numbers")
-            result = await send_command("resize_node", {"nodeId": node_id, "width": width, "height": height})
+            result = await client.send_command("resize_node", {"nodeId": node_id, "width": width, "height": height})
             typed = result if isinstance(result, dict) else {}
             node_name = typed.get("name", node_id)
             return [TextContent(type="text", text=f'Resized node "{node_name}" to width {width} and height {height}')]
@@ -411,7 +401,7 @@ async def handle_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent 
                 return err("set_layout_mode requires layoutMode")
             layout_wrap_val = arguments.get("layoutWrap")
             layout_wrap = layout_wrap_val if layout_wrap_val is not None else "NO_WRAP"
-            result = await send_command("set_layout_mode", {
+            result = await client.send_command("set_layout_mode", {
                 "nodeId": node_id,
                 "layoutMode": layout_mode,
                 "layoutWrap": layout_wrap,
@@ -450,7 +440,7 @@ async def handle_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent 
                 params["paddingBottom"] = bottom
             if left is not None:
                 params["paddingLeft"] = left
-            result = await send_command("set_padding", params)
+            result = await client.send_command("set_padding", params)
             typed = result if isinstance(result, dict) else {}
             node_name = typed.get("name", node_id)
             padding_parts = []
@@ -480,7 +470,7 @@ async def handle_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent 
                 params["counterAxisAlignItems"] = counter
             if primary is None and counter is None:
                 return err("set_axis_align requires at least one of: primaryAxisAlignItems, counterAxisAlignItems")
-            result = await send_command("set_axis_align", params)
+            result = await client.send_command("set_axis_align", params)
             typed = result if isinstance(result, dict) else {}
             node_name = typed.get("name", node_id)
             align_parts = []
@@ -506,7 +496,7 @@ async def handle_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent 
                 params["layoutSizingVertical"] = v_sizing
             if h_sizing is None and v_sizing is None:
                 return err("set_layout_sizing requires at least one of: layoutSizingHorizontal, layoutSizingVertical")
-            result = await send_command("set_layout_sizing", params)
+            result = await client.send_command("set_layout_sizing", params)
             typed = result if isinstance(result, dict) else {}
             node_name = typed.get("name", node_id)
             sizing_parts = []
@@ -534,7 +524,7 @@ async def handle_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent 
                 if not isinstance(counter_spacing, (int, float)):
                     return err("set_item_spacing: counterAxisSpacing must be a number")
                 params["counterAxisSpacing"] = counter_spacing
-            result = await send_command("set_item_spacing", params)
+            result = await client.send_command("set_item_spacing", params)
             typed = result if isinstance(result, dict) else {}
             node_name = typed.get("name", node_id)
             return [TextContent(type="text", text=f'Updated spacing for frame "{node_name}": itemSpacing={spacing}')]
@@ -564,7 +554,7 @@ async def handle_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent 
                 if not isinstance(properties, list):
                     return err("set_annotation: properties must be an array")
                 params["properties"] = properties
-            result = await send_command("set_annotation", params)
+            result = await client.send_command("set_annotation", params)
             return ok(result)
         except Exception as e:
             return err(f"Error setting annotation: {e}")
@@ -577,7 +567,7 @@ async def handle_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent 
             if not isinstance(annotations, list):
                 return err("set_multiple_annotations: annotations must be an array")
             params: Dict[str, Any] = {"nodeId": node_id, "annotations": annotations}
-            result = await send_command("set_multiple_annotations", params)
+            result = await client.send_command("set_multiple_annotations", params)
             typed = result if isinstance(result, dict) else {}
             annotations_applied = typed.get("annotationsApplied", 0)
             annotations_failed = typed.get("annotationsFailed", 0)
@@ -609,7 +599,7 @@ async def handle_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent 
                 "useChunking": arguments.get("useChunking", True),
                 "chunkSize": arguments.get("chunkSize", 10),
             }
-            result = await send_command("scan_text_nodes", params)
+            result = await client.send_command("scan_text_nodes", params)
             typed = result if isinstance(result, dict) else {}
             if "chunks" in typed:
                 total_nodes = typed.get("totalNodes", 0)
@@ -640,7 +630,7 @@ async def handle_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent 
                 "nodeId": node_id,
                 "types": node_types,
             }
-            result = await send_command("scan_nodes_by_types", params)
+            result = await client.send_command("scan_nodes_by_types", params)
             typed = result if isinstance(result, dict) else {}
             if "matchingNodes" in typed:
                 count = typed.get("count", 0)
@@ -663,7 +653,7 @@ async def handle_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent 
             params: Dict[str, Any] = {}
             if node_id is not None:
                 params["instanceNodeId"] = node_id
-            result = await send_command("get_instance_overrides", params)
+            result = await client.send_command("get_instance_overrides", params)
             return ok(result)
         except Exception as e:
             return err(f"Error getting instance overrides: {e}")
@@ -681,7 +671,7 @@ async def handle_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent 
                 "sourceInstanceId": source_node_id,
                 "targetNodeIds": target_node_ids,
             }
-            result = await send_command("set_instance_overrides", params)
+            result = await client.send_command("set_instance_overrides", params)
             typed = result if isinstance(result, dict) else {}
             success = typed.get("success", False)
             message = typed.get("message", "")
@@ -699,7 +689,7 @@ async def handle_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent 
             params: Dict[str, Any] = {}
             if connector_id is not None:
                 params["connectorId"] = connector_id
-            result = await send_command("set_default_connector", params)
+            result = await client.send_command("set_default_connector", params)
             return ok(f"Default connector set: {json.dumps(result)}")
         except Exception as e:
             return err(f"Error setting default connector: {e}")
@@ -720,7 +710,7 @@ async def handle_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent 
                 if not conn.get("endNodeId"):
                     return err(f"create_connections: item {i} missing endNodeId")
             params: Dict[str, Any] = {"connections": connections}
-            result = await send_command("create_connections", params)
+            result = await client.send_command("create_connections", params)
             return ok(f"Created {len(connections)} connections: {json.dumps(result)}")
         except Exception as e:
             return err(f"Error creating connections: {e}")
@@ -729,7 +719,7 @@ async def handle_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent 
             node_id = arguments.get("nodeId")
             if node_id is None:
                 return err("set_focus requires nodeId")
-            result = await send_command("set_focus", {"nodeId": node_id})
+            result = await client.send_command("set_focus", {"nodeId": node_id})
             typed = result if isinstance(result, dict) else {}
             node_name = typed.get("name", node_id)
             node_id_result = typed.get("id", node_id)
@@ -743,7 +733,7 @@ async def handle_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent 
                 return err("set_selections requires nodeIds")
             if not isinstance(node_ids, list):
                 return err("set_selections: nodeIds must be an array")
-            result = await send_command("set_selections", {"nodeIds": node_ids})
+            result = await client.send_command("set_selections", {"nodeIds": node_ids})
             typed = result if isinstance(result, dict) else {}
             selected_nodes = typed.get("selectedNodes", [])
             count = typed.get("count", len(node_ids))
@@ -763,7 +753,7 @@ async def handle_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent 
                 "code": code,
                 "params": arguments.get("params") or {},
             }
-            result = await send_command("execute_code", params, timeout_ms=120000)
+            result = await client.send_command("execute_code", params, timeout_ms=120000)
             return ok(result)
         except Exception as e:
             return err(f"Error executing code: {e}")
@@ -772,7 +762,7 @@ async def handle_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent 
             channel = arguments.get("channel", "")
             if not channel:
                 return err("Please provide a channel name to join")
-            await join_channel(channel)
+            await client.join_channel(channel)
             return ok(f"Successfully joined channel: {channel}")
         except Exception as e:
             return err(f"Error joining channel: {e}")
