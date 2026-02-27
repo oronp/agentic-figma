@@ -168,14 +168,14 @@ brew install python3
 From the **repo root** directory:
 
 ```bash
-pip3 install -r src/mcp/requirements.txt
+pip3 install -e .
 ```
 
-Expected output: Lines ending with `Successfully installed mcp-... websockets-...`
+Expected output: Lines ending with `Successfully installed talk-to-figma-mcp-...`
 
 **⚠️ If you see a permissions error:**
 ```bash
-pip3 install --user -r src/mcp/requirements.txt
+pip3 install --user -e .
 ```
 
 > **Windows note:** Use `pip` instead of `pip3`.
@@ -351,7 +351,7 @@ python3 --version
 
 ```bash
 # Use --user flag to install to your home directory
-pip3 install --user -r src/mcp/requirements.txt
+pip3 install --user -e .
 ```
 
 ---
@@ -399,7 +399,7 @@ echo "=== FINAL VERIFICATION ==="
 python3 --version && echo "✅ Python 3 available" || echo "❌ Python 3 missing"
 
 # Dependencies installed
-python3 -c "import mcp; import websockets; print('✅ Dependencies installed')" 2>/dev/null || echo "❌ Dependencies missing — run: pip3 install -r src/mcp/requirements.txt"
+python3 -c "import mcp; import websockets; print('✅ Dependencies installed')" 2>/dev/null || echo "❌ Dependencies missing — run: pip3 install -e ."
 
 # MCP config present (Cursor)
 test -f .cursor/mcp.json && echo "✅ Cursor MCP config present" || echo "⚠️  No .cursor/mcp.json — check Claude Desktop config instead"
@@ -413,7 +413,7 @@ echo "=== VERIFICATION COMPLETE ==="
 ### ✅ All of the following must be true for a successful setup:
 
 - ✅ `python3 --version` returns 3.10 or higher
-- ✅ `mcp` and `websockets` packages installed
+- ✅ `mcp` and `websockets` packages installed (`pip3 install -e .`)
 - ✅ MCP config file present with correct paths
 - ✅ AI agent restarted and TalkToFigma shows "Connected"
 - ✅ WebSocket relay running on port 3055
