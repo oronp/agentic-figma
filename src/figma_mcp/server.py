@@ -3,7 +3,7 @@
 MCP server for talk-to-figma-mcp — Python port of src/talk_to_figma_mcp/server.ts.
 
 Usage:
-    python -m mcp.server [--server=<hostname>]
+    python -m figma_mcp.server [--server=<hostname>]
 """
 
 import argparse

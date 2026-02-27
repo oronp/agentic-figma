@@ -8,8 +8,8 @@ dependencies = [
 ]
 
 [project.scripts]
-figma-mcp   = "mcp.server:main"
-figma-relay = "mcp.socket_server:main"
+figma-mcp   = "figma_mcp.server:main"
+figma-relay = "figma_mcp.socket_server:main"
 
 [build-system]
 requires = ["setuptools>=68"]
