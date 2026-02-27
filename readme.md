@@ -6,31 +6,26 @@ https://github.com/user-attachments/assets/129a14d2-ed73-470f-9a4c-2240b2a4885c
 
 ## Project Structure
 
-- `src/talk_to_figma_mcp/` - TypeScript MCP server for Figma integration
-- `src/cursor_mcp_plugin/` - Figma plugin for communicating with Cursor
-- `src/socket.ts` - WebSocket server that facilitates communication between the MCP server and Figma plugin
+- `src/python_mcp/` - Python MCP server and WebSocket relay
+- `src/cursor_mcp_plugin/` - Figma plugin for communicating with the MCP server
 
 ## Get Started
 
-1. Install Bun if you haven't already:
+1. Install Python dependencies:
 
 ```bash
-curl -fsSL https://bun.sh/install | bash
+pip install -r src/python_mcp/requirements.txt
 ```
 
-2. Run setup, this will also install MCP in your Cursor's active project
+2. Start the WebSocket relay server:
 
 ```bash
-bun setup
+python src/python_mcp/socket_server.py
 ```
 
-3. Start the Websocket server
+3. Configure your MCP client (see [Development Setup](#development-setup))
 
-```bash
-bun socket
-```
-
-4. **NEW** Install Figma plugin from [Figma community page](https://www.figma.com/community/plugin/1485687494525374295/cursor-talk-to-figma-mcp-plugin) or [install locally](#figma-plugin)
+4. Install the Figma plugin from the [Figma community page](https://www.figma.com/community/plugin/1485687494525374295/cursor-talk-to-figma-mcp-plugin) or [install locally](#figma-plugin)
 
 ## Quick Video Tutorial
 
@@ -48,14 +43,14 @@ Propagate component instance overrides from a source instance to multiple target
 
 ## Development Setup
 
-To develop, update your mcp config to direct to your local directory.
+Point your MCP config to the local Python server:
 
 ```json
 {
   "mcpServers": {
     "TalkToFigma": {
-      "command": "bun",
-      "args": ["/path-to-repo/src/talk_to_figma_mcp/server.ts"]
+      "command": "python",
+      "args": ["/path-to-repo/src/python_mcp/server.py"]
     }
   }
 }
@@ -63,27 +58,27 @@ To develop, update your mcp config to direct to your local directory.
 
 ## Manual Setup and Installation
 
-### MCP Server: Integration with Cursor
+### MCP Server
 
-Add the server to your Cursor MCP configuration in `~/.cursor/mcp.json`:
+Add the server to your MCP configuration:
 
 ```json
 {
   "mcpServers": {
     "TalkToFigma": {
-      "command": "bunx",
-      "args": ["cursor-talk-to-figma-mcp@latest"]
+      "command": "python",
+      "args": ["/path-to-repo/src/python_mcp/server.py"]
     }
   }
 }
 ```
 
-### WebSocket Server
+### WebSocket Relay Server
 
-Start the WebSocket server:
+Start the relay server:
 
 ```bash
-bun socket
+python src/python_mcp/socket_server.py
 ```
 
 ### Figma Plugin
@@ -93,30 +88,9 @@ bun socket
 3. Select the `src/cursor_mcp_plugin/manifest.json` file
 4. The plugin should now be available in your Figma development plugins
 
-## Windows + WSL Guide
-
-1. Install bun via powershell
-
-```bash
-powershell -c "irm bun.sh/install.ps1|iex"
-```
-
-2. Uncomment the hostname `0.0.0.0` in `src/socket.ts`
-
-```typescript
-// uncomment this to allow connections in windows wsl
-hostname: "0.0.0.0",
-```
-
-3. Start the websocket
-
-```bash
-bun socket
-```
-
 ## Usage
 
-1. Start the WebSocket server
+1. Start the WebSocket relay server
 2. Install the MCP server in Cursor
 3. Open Figma and run the Cursor MCP Plugin
 4. Connect the plugin to the WebSocket server by joining a channel using `join_channel`
@@ -212,15 +186,12 @@ The MCP server includes several helper prompts to guide you through complex desi
 
 ## Development
 
-### Building the Figma Plugin
+### Figma Plugin
 
-1. Navigate to the Figma plugin directory:
+The plugin requires no build step:
 
-   ```
-   cd src/cursor_mcp_plugin
-   ```
-
-2. Edit code.js and ui.html
+1. Navigate to `src/cursor_mcp_plugin/`
+2. Edit `code.js` and `ui.html` directly
 
 ## Best Practices
 
