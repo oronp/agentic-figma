@@ -12,6 +12,7 @@ Usage:
 
 import asyncio
 import json
+import logging
 import os
 import sys
 from typing import Dict, Set
@@ -19,13 +20,20 @@ from typing import Dict, Set
 import websockets
 from websockets.server import ServerConnection
 
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="[%(levelname)s] %(message)s",
+    handlers=[logging.StreamHandler(sys.stdout)],
+)
+logger = logging.getLogger("figma_relay")
+
 # channel_name -> set of connected ServerConnection objects
 channels: Dict[str, Set[ServerConnection]] = {}
 
 
 async def handler(ws: ServerConnection) -> None:
     """Handle a single WebSocket client connection."""
-    print("New client connected", flush=True)
+    logger.info("New client connected")
 
     # Send welcome message
     await ws.send(json.dumps({
@@ -36,7 +44,7 @@ async def handler(ws: ServerConnection) -> None:
     try:
         async for raw_message in ws:
             try:
-                print(f"Received message from client: {raw_message}", flush=True)
+                logger.debug("Received message from client: %s", raw_message)
                 data = json.loads(raw_message)
 
                 # ── JOIN ──────────────────────────────────────────────────────
@@ -49,12 +57,8 @@ async def handler(ws: ServerConnection) -> None:
                         }))
                         continue
 
-                    # Create channel if it does not exist yet
-                    if channel_name not in channels:
-                        channels[channel_name] = set()
-
+                    channels.setdefault(channel_name, set()).add(ws)
                     channel_clients = channels[channel_name]
-                    channel_clients.add(ws)
 
                     # Confirmation 1: plain join confirmation
                     await ws.send(json.dumps({
@@ -64,7 +68,7 @@ async def handler(ws: ServerConnection) -> None:
                     }))
 
                     # Confirmation 2: result keyed by request id
-                    print(f"Sending message to client: {data.get('id')}", flush=True)
+                    logger.debug("Sending join confirmation for request: %s", data.get("id"))
                     await ws.send(json.dumps({
                         "type": "system",
                         "message": {
@@ -107,10 +111,7 @@ async def handler(ws: ServerConnection) -> None:
                     # Broadcast to every member of the channel (including sender)
                     for client in list(channel_clients):
                         try:
-                            print(
-                                f"Broadcasting message to client: {data.get('message')}",
-                                flush=True,
-                            )
+                            logger.debug("Broadcasting message to client: %s", data.get("message"))
                             await client.send(json.dumps({
                                 "type": "broadcast",
                                 "message": data.get("message"),
@@ -121,21 +122,19 @@ async def handler(ws: ServerConnection) -> None:
                             channel_clients.discard(client)
 
             except json.JSONDecodeError as exc:
-                print(f"Error handling message: {exc}", flush=True)
+                logger.error("Error parsing message: %s", exc)
             except Exception as exc:
-                print(f"Error handling message: {exc}", flush=True)
+                logger.error("Error handling message: %s", exc)
 
     except websockets.exceptions.ConnectionClosedError:
         pass
     except websockets.exceptions.ConnectionClosedOK:
         pass
     finally:
-        # Remove this client from every channel it was part of
-        print("Client disconnected", flush=True)
+        logger.info("Client disconnected")
         for channel_name, clients in list(channels.items()):
             if ws in clients:
                 clients.discard(ws)
-                # Notify remaining members
                 for client in list(clients):
                     try:
                         await client.send(json.dumps({
@@ -151,8 +150,7 @@ async def main() -> None:
     port = int(os.environ.get("PORT", 3055))
 
     async with websockets.serve(handler, "0.0.0.0", port):
-        print(f"WebSocket server running on port {port}", flush=True)
-        # Run forever
+        logger.info("WebSocket server running on port %d", port)
         await asyncio.get_running_loop().create_future()
 
 
