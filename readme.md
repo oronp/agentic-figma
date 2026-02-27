@@ -6,7 +6,7 @@ https://github.com/user-attachments/assets/129a14d2-ed73-470f-9a4c-2240b2a4885c
 
 ## Project Structure
 
-- `src/python_mcp/` - Python MCP server and WebSocket relay
+- `src/mcp/` - Python MCP server and WebSocket relay
 - `src/figma_plugin/` - Figma plugin for communicating with the MCP server
 
 ## Get Started
@@ -14,13 +14,13 @@ https://github.com/user-attachments/assets/129a14d2-ed73-470f-9a4c-2240b2a4885c
 1. Install Python dependencies:
 
 ```bash
-pip install -r src/python_mcp/requirements.txt
+pip install -e .
 ```
 
 2. Start the WebSocket relay server:
 
 ```bash
-python src/python_mcp/socket_server.py
+python src/mcp/socket_server.py
 ```
 
 3. Configure your MCP client (see [Development Setup](#development-setup))
@@ -50,7 +50,7 @@ Point your MCP config to the local Python server:
   "mcpServers": {
     "TalkToFigma": {
       "command": "python",
-      "args": ["/path-to-repo/src/python_mcp/server.py"]
+      "args": ["/path-to-repo/src/mcp/server.py"]
     }
   }
 }
@@ -67,7 +67,7 @@ Add the server to your MCP configuration:
   "mcpServers": {
     "TalkToFigma": {
       "command": "python",
-      "args": ["/path-to-repo/src/python_mcp/server.py"]
+      "args": ["/path-to-repo/src/mcp/server.py"]
     }
   }
 }
@@ -78,7 +78,7 @@ Add the server to your MCP configuration:
 Start the relay server:
 
 ```bash
-python src/python_mcp/socket_server.py
+python src/mcp/socket_server.py
 ```
 
 ### Figma Plugin
