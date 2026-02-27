@@ -1,13 +1,13 @@
-# Cursor Talk to Figma MCP
+# Talk to Figma MCP
 
-This project implements a Model Context Protocol (MCP) integration between Cursor AI and Figma, allowing Cursor to communicate with Figma for reading designs and modifying them programmatically.
+This project implements a Model Context Protocol (MCP) integration between AI agents and Figma, allowing any MCP-compatible AI assistant to read and modify Figma designs programmatically.
 
 https://github.com/user-attachments/assets/129a14d2-ed73-470f-9a4c-2240b2a4885c
 
 ## Project Structure
 
 - `src/python_mcp/` - Python MCP server and WebSocket relay
-- `src/cursor_mcp_plugin/` - Figma plugin for communicating with the MCP server
+- `src/figma_plugin/` - Figma plugin for communicating with the MCP server
 
 ## Get Started
 
@@ -85,16 +85,16 @@ python src/python_mcp/socket_server.py
 
 1. In Figma, go to Plugins > Development > New Plugin
 2. Choose "Link existing plugin"
-3. Select the `src/cursor_mcp_plugin/manifest.json` file
+3. Select the `src/figma_plugin/manifest.json` file
 4. The plugin should now be available in your Figma development plugins
 
 ## Usage
 
 1. Start the WebSocket relay server
-2. Install the MCP server in Cursor
-3. Open Figma and run the Cursor MCP Plugin
+2. Install the MCP server in your AI agent
+3. Open Figma and run the Talk to Figma MCP Plugin
 4. Connect the plugin to the WebSocket server by joining a channel using `join_channel`
-5. Use Cursor to communicate with Figma using the MCP tools
+5. Use your AI agent to communicate with Figma using the MCP tools
 
 ## MCP Tools
 
@@ -190,8 +190,8 @@ The MCP server includes several helper prompts to guide you through complex desi
 
 The plugin requires no build step:
 
-1. Navigate to `src/cursor_mcp_plugin/`
-2. Edit `code.js` and `ui.html` directly
+1. Navigate to `src/figma_plugin/`
+2. Edit `code.js` and `ui.html` directly — no build step needed
 
 ## Best Practices
 

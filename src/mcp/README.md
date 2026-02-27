@@ -1,20 +1,20 @@
-# talk-to-figma-mcp (Python)
+# talk-to-figma-mcp
 
-Python port of the TypeScript MCP server and WebSocket relay.
+MCP server and WebSocket relay for AI agent ↔ Figma communication.
 
 ## Setup
 
 Run all commands from the **repo root** directory.
 
 ```bash
-pip3 install -r src/python_mcp/requirements.txt
+pip3 install -r src/mcp/requirements.txt
 ```
 
 ## Run the WebSocket relay
 
 ```bash
 # From repo root:
-python3 src/python_mcp/socket_server.py
+python3 src/mcp/socket_server.py
 # Runs on port 3055 by default. Override with PORT env var.
 ```
 
@@ -22,12 +22,12 @@ python3 src/python_mcp/socket_server.py
 
 ```bash
 # From repo root:
-python3 src/python_mcp/server.py
+python3 src/mcp/server.py
 # Connects to localhost:3055 by default.
 # Use --server=<hostname> to connect to a remote relay (uses wss://).
 ```
 
-## Claude Desktop / Cursor config
+## AI Agent config
 
 Use the full path to your Python 3 interpreter (find it with `which python3`):
 
@@ -36,7 +36,7 @@ Use the full path to your Python 3 interpreter (find it with `which python3`):
   "mcpServers": {
     "TalkToFigma": {
       "command": "python3",
-      "args": ["/path-to-repo/src/python_mcp/server.py"]
+      "args": ["/path-to-repo/src/mcp/server.py"]
     }
   }
 }

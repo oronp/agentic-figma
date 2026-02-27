@@ -1,4 +1,4 @@
-# README for AI Agent: Python MCP Setup Guide for talk-to-figma-mcp
+# README for AI Agent: MCP Setup Guide for talk-to-figma-mcp
 
 ## 🤖 AI Agent Decision Flow
 
@@ -17,7 +17,7 @@ flowchart TD
 
 ## 🎯 Objective
 
-Set up the **Python MCP server** for talk-to-figma-mcp so your AI assistant (Cursor, Claude Desktop, etc.) can read and modify Figma designs through natural language.
+Set up the **MCP server** for talk-to-figma-mcp so your AI agent (Cursor, Claude Desktop, etc.) can read and modify Figma designs through natural language.
 
 This guide uses Python 3 and pip — no Node.js, no Bun, no build step required.
 
@@ -168,14 +168,14 @@ brew install python3
 From the **repo root** directory:
 
 ```bash
-pip3 install -r src/python_mcp/requirements.txt
+pip3 install -r src/mcp/requirements.txt
 ```
 
 Expected output: Lines ending with `Successfully installed mcp-... websockets-...`
 
 **⚠️ If you see a permissions error:**
 ```bash
-pip3 install --user -r src/python_mcp/requirements.txt
+pip3 install --user -r src/mcp/requirements.txt
 ```
 
 > **Windows note:** Use `pip` instead of `pip3`.
@@ -186,7 +186,7 @@ pip3 install --user -r src/python_mcp/requirements.txt
 
 ---
 
-### Step 3: Configure MCP in Cursor or Claude Desktop
+### Step 3: Configure MCP in Your AI Agent
 
 First, find your Python 3 path:
 
@@ -200,8 +200,8 @@ which python3
 Then find the full path to `server.py` in this repo:
 
 ```bash
-realpath src/python_mcp/server.py
-# Example output: /Users/yourname/projects/talk-to-figma-mcp/src/python_mcp/server.py
+realpath src/mcp/server.py
+# Example output: /Users/yourname/projects/talk-to-figma-mcp/src/mcp/server.py
 ```
 
 **For Cursor:** Create or edit `.cursor/mcp.json` in this project:
@@ -211,7 +211,7 @@ realpath src/python_mcp/server.py
   "mcpServers": {
     "TalkToFigma": {
       "command": "/usr/local/bin/python3",
-      "args": ["/Users/yourname/projects/talk-to-figma-mcp/src/python_mcp/server.py"]
+      "args": ["/Users/yourname/projects/talk-to-figma-mcp/src/mcp/server.py"]
     }
   }
 }
@@ -224,7 +224,7 @@ realpath src/python_mcp/server.py
   "mcpServers": {
     "TalkToFigma": {
       "command": "/usr/local/bin/python3",
-      "args": ["/Users/yourname/projects/talk-to-figma-mcp/src/python_mcp/server.py"]
+      "args": ["/Users/yourname/projects/talk-to-figma-mcp/src/mcp/server.py"]
     }
   }
 }
@@ -232,7 +232,7 @@ realpath src/python_mcp/server.py
 
 > **Windows note:** Config file is at `%APPDATA%\Claude\claude_desktop_config.json`. Use `python` as the command and Windows-style paths (e.g., `C:\\Users\\yourname\\...`).
 
-After saving the config, **restart Cursor or Claude Desktop** to pick up the change.
+After saving the config, **restart your AI agent** to pick up the change.
 
 **CHECKPOINT 3** ✅ — MCP config file saved and app restarted. Verify TalkToFigma shows as "Connected" in Settings → MCP.
 
@@ -245,7 +245,7 @@ After saving the config, **restart Cursor or Claude Desktop** to pick up the cha
 Open a **dedicated terminal** and run:
 
 ```bash
-python3 src/python_mcp/socket_server.py > relay.log 2>&1
+python3 src/mcp/socket_server.py > relay.log 2>&1
 ```
 
 This terminal will become unresponsive — that means the relay is running correctly. **Keep it open.**
@@ -282,7 +282,7 @@ lsof -i :3055 && echo "✅ Relay running on port 3055" || echo "❌ Relay not ru
 #### Connect to the Relay
 
 1. Open any Figma file
-2. Go to `Plugins` menu → `Cursor Talk to Figma MCP Plugin`
+2. Go to `Plugins` menu → `Talk to Figma MCP Plugin`
 3. In the plugin panel, set the WebSocket URL to: `ws://localhost:3055`
 4. Click **"Connect"**
 
@@ -296,7 +296,7 @@ The plugin should show a **"Connected"** status. Your relay terminal will log a 
 
 ### Step 6: Test the Integration
 
-In Cursor or Claude Desktop (with MCP connected), run these commands:
+In your AI agent (with MCP connected), run these commands:
 
 **Test 1 — Join a channel:**
 ```
@@ -351,7 +351,7 @@ python3 --version
 
 ```bash
 # Use --user flag to install to your home directory
-pip3 install --user -r src/python_mcp/requirements.txt
+pip3 install --user -r src/mcp/requirements.txt
 ```
 
 ---
@@ -363,7 +363,7 @@ pip3 install --user -r src/python_mcp/requirements.txt
 lsof -ti:3055 | xargs kill -9 2>/dev/null || true
 
 # Wait 2 seconds, then restart the relay
-python3 src/python_mcp/socket_server.py > relay.log 2>&1
+python3 src/mcp/socket_server.py > relay.log 2>&1
 ```
 
 > **Windows note:** Run `netstat -ano | findstr 3055` to find the PID, then `taskkill /PID <pid> /F`.
@@ -380,7 +380,7 @@ python3 src/python_mcp/socket_server.py > relay.log 2>&1
 
 ---
 
-### MCP Not Detected in Cursor / Claude Desktop
+### MCP Not Detected in AI Agent
 
 1. Verify the config file path is correct (see Step 3 above)
 2. Confirm the `python3` path in the config matches `which python3`
@@ -399,13 +399,13 @@ echo "=== FINAL VERIFICATION ==="
 python3 --version && echo "✅ Python 3 available" || echo "❌ Python 3 missing"
 
 # Dependencies installed
-python3 -c "import mcp; import websockets; print('✅ Dependencies installed')" 2>/dev/null || echo "❌ Dependencies missing — run: pip3 install -r src/python_mcp/requirements.txt"
+python3 -c "import mcp; import websockets; print('✅ Dependencies installed')" 2>/dev/null || echo "❌ Dependencies missing — run: pip3 install -r src/mcp/requirements.txt"
 
 # MCP config present (Cursor)
 test -f .cursor/mcp.json && echo "✅ Cursor MCP config present" || echo "⚠️  No .cursor/mcp.json — check Claude Desktop config instead"
 
 # WebSocket relay running
-lsof -i :3055 >/dev/null 2>&1 && echo "✅ WebSocket relay running on port 3055" || echo "❌ Relay not running — start it: python3 src/python_mcp/socket_server.py"
+lsof -i :3055 >/dev/null 2>&1 && echo "✅ WebSocket relay running on port 3055" || echo "❌ Relay not running — start it: python3 src/mcp/socket_server.py"
 
 echo "=== VERIFICATION COMPLETE ==="
 ```
@@ -415,7 +415,7 @@ echo "=== VERIFICATION COMPLETE ==="
 - ✅ `python3 --version` returns 3.10 or higher
 - ✅ `mcp` and `websockets` packages installed
 - ✅ MCP config file present with correct paths
-- ✅ App (Cursor / Claude Desktop) restarted and TalkToFigma shows "Connected"
+- ✅ AI agent restarted and TalkToFigma shows "Connected"
 - ✅ WebSocket relay running on port 3055
 - ✅ Figma plugin connected (shows "Connected", relay log shows connection)
 - ✅ `join_channel` returns success
