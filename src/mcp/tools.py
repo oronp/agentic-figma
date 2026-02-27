@@ -621,7 +621,7 @@ ALL_TOOLS: List[Tool] = [
         description=(
             "Execute arbitrary JavaScript code in the Figma plugin context. "
             "The code runs as the body of an async function with `figma` (full Figma Plugin API) "
-            "and `params` (your data object) in scope. Returns whatever the code returns. "
+            "in scope. Returns whatever the code returns. "
             "Use this to run complex, multi-step Figma operations in a single call — ideal for "
             "skills that create templated designs (e.g. typography systems, component sets)."
         ),
@@ -630,12 +630,7 @@ ALL_TOOLS: List[Tool] = [
             "properties": {
                 "code": {
                     "type": "string",
-                    "description": "JavaScript code to execute. Runs as the body of: async function(figma, params) { <your code> }. Has full figma.* API access and async/await support.",
-                },
-                "params": {
-                    "type": "object",
-                    "description": "Data to pass into the code as the `params` argument (fonts, sizes, node IDs, etc.)",
-                    "additionalProperties": True,
+                    "description": "JavaScript code to execute. Runs as the body of: async function(figma) { <your code> }. Has full figma.* API access and async/await support.",
                 },
             },
             "required": ["code"],

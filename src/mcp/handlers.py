@@ -532,9 +532,7 @@ async def _execute_code(args: Dict, client: FigmaClient):
     code = args.get("code")
     if not code or not isinstance(code, str) or not code.strip():
         return err("execute_code requires a non-empty code string")
-    result = await client.send_command("execute_code",
-                                       {"code": code, "params": args.get("params") or {}},
-                                       timeout_ms=120000)
+    result = await client.send_command("execute_code", {"code": code}, timeout_ms=120000)
     return ok(result)
 
 
