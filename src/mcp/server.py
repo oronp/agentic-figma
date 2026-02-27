@@ -375,8 +375,8 @@ def _stub(name: str) -> List[TextContent]:
 # hitting a circular-import problem.
 # ---------------------------------------------------------------------------
 
-from tools import ALL_TOOLS          # noqa: E402
-from handlers import handle_tool     # noqa: E402
+from .tools import ALL_TOOLS          # noqa: E402
+from .handlers import handle_tool     # noqa: E402
 
 
 @server.list_tools()

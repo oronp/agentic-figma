@@ -14,7 +14,7 @@ import mcp.types as types
 from mcp.types import ImageContent, TextContent
 
 # Imported from server after server-side definitions are in place.
-from server import (  # noqa: E402
+from .server import (  # noqa: E402
     err,
     filter_figma_node,
     join_channel,
