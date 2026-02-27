@@ -4,3 +4,4 @@
 .env
 docs/
 /src/python_mcp/.venv/
+*.egg-info/
