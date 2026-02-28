@@ -195,33 +195,6 @@
         color: #999999;
       }
 
-      .tabs {
-        display: flex;
-        border-bottom: 1px solid #444444;
-        margin-bottom: 16px;
-      }
-
-      .tab {
-        padding: 8px 16px;
-        cursor: pointer;
-        font-size: 14px;
-        font-weight: 500;
-        color: #999999;
-      }
-
-      .tab.active {
-        border-bottom: 2px solid #18a0fb;
-        color: #18a0fb;
-      }
-
-      .tab-content {
-        display: none;
-      }
-
-      .tab-content.active {
-        display: block;
-      }
-
       .link {
         color: #18a0fb;
         text-decoration: none;
@@ -243,6 +216,58 @@
         height: 24px;
         object-fit: contain;
       }
+      .channel-box {
+        flex: 1;
+        background-color: #2d2d2d;
+        border: 1px solid #444444;
+        border-radius: 4px;
+        padding: 6px 10px;
+        font-family: monospace;
+        font-size: 13px;
+        color: #e0e0e0;
+        letter-spacing: 0.05em;
+      }
+
+      .icon-btn {
+        background: none;
+        border: 1px solid #444444;
+        border-radius: 4px;
+        padding: 6px 8px;
+        margin: 0;
+        cursor: pointer;
+        color: #999999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: color 0.2s, border-color 0.2s;
+      }
+
+      .icon-btn:hover {
+        color: #e0e0e0;
+        border-color: #666666;
+        background: none;
+      }
+
+      .toast {
+        position: fixed;
+        bottom: 16px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: #333333;
+        color: #e0e0e0;
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: 13px;
+        pointer-events: none;
+        opacity: 1;
+        transition: opacity 0.3s;
+        z-index: 100;
+      }
+
+      .toast.hidden {
+        opacity: 0;
+      }
+
       /* Progress styles */
       .operation-complete {
         color: #4ade80;
@@ -258,23 +283,38 @@
       <div class="header">
         <div class="header-text">
           <h1>Talk To Figma MCP Plugin</h1>
-          <p>Connect Figma to Cursor AI using MCP</p>
         </div>
       </div>
 
-      <div class="tabs">
-        <div id="tab-connection" class="tab active">Connection</div>
-        <div id="tab-about" class="tab">About</div>
-      </div>
-
-      <div id="content-connection" class="tab-content active">
+      <div id="content-connection">
         <div class="section">
           <div style="margin-bottom: 16px">
             <button id="btn-connect" class="primary" style="width: 100%">
               Connect
             </button>
           </div>
+        </div>
 
+        <div id="connection-status" class="status disconnected">
+          Not connected to MCP server
+        </div>
+
+        <div id="channel-container" class="hidden" style="margin-top: 12px;">
+          <label>Channel</label>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <div id="channel-display" class="channel-box"></div>
+            <button id="btn-copy-channel" class="icon-btn" title="Copy channel">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div id="toast" class="toast hidden">Copied!</div>
+
+        <div class="section">
           <div id="port-container">
             <label for="port">WebSocket Server Port</label>
             <input
@@ -286,34 +326,6 @@
               max="65535"
             />
           </div>
-        </div>
-
-        <div id="connection-status" class="status disconnected">
-          Not connected to Cursor MCP server
-        </div>
-
-        <div id="mcp-config" class="section hidden">
-          <h2>MCP Configuration</h2>
-          <p>
-            Copy this configuration to your <code>mcp.json</code> file in
-            Cursor:
-          </p>
-          <textarea
-            id="mcp-json"
-            rows="5"
-            readonly
-            style="
-              width: 100%;
-              background: #2d2d2d;
-              color: #e0e0e0;
-              padding: 12px;
-              border: 1px solid #444444;
-              border-radius: 4px;
-              font-family: monospace;
-              margin-bottom: 8px;
-            "
-          ></textarea>
-          <button id="btn-copy" class="secondary">Copy to Clipboard</button>
         </div>
 
         <!-- Add Progress Bar Section -->
@@ -352,29 +364,6 @@
           </div>
         </div>
       </div>
-
-      <div id="content-about" class="tab-content">
-        <div class="section">
-          <h2>About Talk To Figma Plugin</h2>
-          <p>
-            This plugin allows Cursor AI to communicate with Figma, enabling
-            AI-assisted design operations.
-            <a
-              class="link"
-              onclick="window.open(`https://github.com/grab/cursor-talk-to-figma-mcp`, '_blank')"
-              >Github</a
-            >
-          </p>
-          <p>Version: 1.1.0</p>
-
-          <h2>How to Use</h2>
-          <ol>
-            <li>Make sure the MCP server is running in Cursor</li>
-            <li>Connect to the server using the port number (default: 3055)</li>
-            <li>Once connected, you can interact with Figma through Cursor</li>
-          </ol>
-        </div>
-      </div>
     </div>
 
     <script>
@@ -391,10 +380,8 @@
       const portInput = document.getElementById("port");
       const connectButton = document.getElementById("btn-connect");
       const connectionStatus = document.getElementById("connection-status");
-
-      // Tabs
-      const tabs = document.querySelectorAll(".tab");
-      const tabContents = document.querySelectorAll(".tab-content");
+      const channelContainer = document.getElementById("channel-container");
+      const channelDisplay = document.getElementById("channel-display");
 
       // Add UI elements for progress tracking
       const progressContainer = document.getElementById("progress-container");
@@ -410,13 +397,8 @@
         let statusMessage =
           message ||
           (isConnected
-            ? "Connected to Cursor MCP server"
-            : "Not connected to Cursor MCP server");
-
-        // Add instructions for localhost when disconnected
-        if (!isConnected) {
-          statusMessage += `<br><br>Run this in your terminal, then connect<br><code>bunx cursor-talk-to-figma-socket</code>`;
-        }
+            ? "Connected to MCP server"
+            : "Not connected to MCP server");
 
         connectionStatus.innerHTML = statusMessage;
         connectionStatus.className = `status ${
@@ -428,15 +410,30 @@
         connectButton.className = isConnected ? "secondary" : "primary";
         portInput.disabled = isConnected;
 
-        // Show/hide MCP config section
-        const mcpConfig = document.getElementById("mcp-config");
-        mcpConfig.className = `section ${isConnected ? "" : "hidden"}`;
-
-        // Update MCP config text when showing
-        if (isConnected) {
-          updateMcpConfig();
+        // Show/hide channel display
+        if (isConnected && state.channel) {
+          channelDisplay.textContent = state.channel;
+          channelContainer.classList.remove("hidden");
+        } else {
+          channelContainer.classList.add("hidden");
         }
       }
+
+      // Toast helper
+      let toastTimer = null;
+      function showToast(msg) {
+        const toast = document.getElementById("toast");
+        toast.textContent = msg;
+        toast.classList.remove("hidden");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.add("hidden"), 2000);
+      }
+
+      document.getElementById("btn-copy-channel").addEventListener("click", () => {
+        if (state.channel) {
+          navigator.clipboard.writeText(state.channel).then(() => showToast("Copied!"));
+        }
+      });
 
       // Connect to WebSocket server
       async function connectToServer(port) {
@@ -476,17 +473,14 @@
                 if (data.message && data.message.result) {
                   state.connected = true;
                   const channelName = data.channel;
-                  updateConnectionStatus(
-                    true,
-                    `Connected to server in channel: <strong>${channelName}</strong>`
-                  );
+                  updateConnectionStatus(true, "Connected to MCP server");
 
                   // Notify the plugin code
                   parent.postMessage(
                     {
                       pluginMessage: {
                         type: "notify",
-                        message: `Connected to Cursor MCP server on port ${port} in channel: ${channelName}`,
+                        message: `Connected to MCP server on port ${port} in channel: ${channelName}`,
                       },
                     },
                     "*"
@@ -672,18 +666,6 @@
         return result;
       }
 
-      // Tab switching
-      tabs.forEach((tab) => {
-        tab.addEventListener("click", () => {
-          tabs.forEach((t) => t.classList.remove("active"));
-          tabContents.forEach((c) => c.classList.remove("active"));
-
-          tab.classList.add("active");
-          const contentId = "content-" + tab.id.split("-")[1];
-          document.getElementById(contentId).classList.add("active");
-        });
-      });
-
       // Replace the separate connect/disconnect button listeners with a single toggle
       connectButton.addEventListener("click", () => {
         if (state.connected) {
@@ -800,35 +782,6 @@
         }
       };
 
-      // Add this to the script section, after all the other event listeners
-      document.getElementById("btn-copy").addEventListener("click", () => {
-        const textarea = document.getElementById("mcp-json");
-        textarea.select();
-        document.execCommand("copy");
-        const button = document.getElementById("btn-copy");
-        button.textContent = "Copied!";
-        setTimeout(() => {
-          button.textContent = "Copy to Clipboard";
-        }, 2000);
-      });
-
-      // Add this function to the script section
-      function updateMcpConfig() {
-        const mcpConfig = {
-          mcpServers: {
-            TalkToFigma: {
-              command: "bunx",
-              args: ["cursor-talk-to-figma-mcp@latest"],
-            },
-          },
-        };
-
-        document.getElementById("mcp-json").value = JSON.stringify(
-          mcpConfig,
-          null,
-          2
-        );
-      }
     </script>
   </body>
 </html>
