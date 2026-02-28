@@ -7,6 +7,9 @@ dependencies = [
     "websockets>=12.0,<13.0",
 ]
 
+[project.optional-dependencies]
+dev = ["pytest", "pytest-asyncio"]
+
 [project.scripts]
 figma-mcp   = "figma_mcp.server:main"
 figma-relay = "figma_mcp.socket_server:main"
