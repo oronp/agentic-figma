@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "TalkToFigma": {
+      "command": "python3",
+      "args": ["src/figma_mcp/server.py"]
+    }
+  }
+}

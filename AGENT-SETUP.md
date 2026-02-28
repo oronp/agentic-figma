@@ -72,15 +72,32 @@ python3 -c "import figma_mcp; print('ok')"
 
 ## Step 3 — Configure the AI Client
 
-Find the `figma-mcp` binary installed in the previous step:
+### Cursor
 
-```bash
-python3 -c "import shutil, sys, pathlib; p=shutil.which('figma-mcp'); print(p if p else pathlib.Path(sys.executable).parent / 'figma-mcp')"
+**No action needed.** `.cursor/mcp.json` is already committed to the repo and uses a relative path that works on every machine:
+
+```json
+{
+  "mcpServers": {
+    "TalkToFigma": {
+      "command": "python3",
+      "args": ["src/figma_mcp/server.py"]
+    }
+  }
+}
 ```
 
-Use the path it prints as `<figma-mcp-path>` in the config below.
+Fully quit and reopen Cursor to pick it up. TalkToFigma should appear as connected in Cursor Settings → MCP.
 
 ### Claude Desktop
+
+Find the absolute path to `server.py` in this repo:
+
+```bash
+realpath src/figma_mcp/server.py
+```
+
+Then write the following to the Claude Desktop config file, replacing `<absolute-path-to-server.py>` with the output above:
 
 | OS      | Config file location |
 |---------|----------------------|
@@ -91,7 +108,8 @@ Use the path it prints as `<figma-mcp-path>` in the config below.
 {
   "mcpServers": {
     "TalkToFigma": {
-      "command": "<figma-mcp-path>"
+      "command": "python3",
+      "args": ["<absolute-path-to-server.py>"]
     }
   }
 }
@@ -99,11 +117,7 @@ Use the path it prints as `<figma-mcp-path>` in the config below.
 
 If the file already has content, merge the `"TalkToFigma"` block into the existing `"mcpServers"` object.
 
-### Cursor
-
-Create or update `.cursor/mcp.json` in the project root with the same JSON above.
-
-After saving the config, ask the user to **fully restart** their AI client.
+Fully restart Claude Desktop after saving.
 
 ---
 
