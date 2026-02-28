@@ -18,12 +18,13 @@ import sys
 from typing import Dict, Set
 
 import websockets
+from websockets.legacy.server import WebSocketServer
 from websockets.server import ServerConnection
 
 logging.basicConfig(
     level=logging.DEBUG,
     format="[%(levelname)s] %(message)s",
-    handlers=[logging.StreamHandler(sys.stdout)],
+    handlers=[logging.StreamHandler(sys.stderr)],
 )
 logger = logging.getLogger("figma_relay")
 
@@ -144,6 +145,13 @@ async def handler(ws: ServerConnection) -> None:
                         }))
                     except Exception:
                         clients.discard(client)
+
+
+async def start_relay(port: int = 3055) -> WebSocketServer:
+    """Start the WebSocket relay server and return the server object (non-blocking)."""
+    server = await websockets.serve(handler, "0.0.0.0", port)
+    logger.info("WebSocket relay started on port %d", port)
+    return server
 
 
 async def main() -> None:

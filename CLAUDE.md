@@ -12,13 +12,12 @@ MCP integration between AI assistants (Cursor, Claude, etc.) and Figma. Enables 
 # Install Python dependencies (from repo root)
 pip install -e .
 
-# Start the WebSocket relay server
+# Start everything (relay + MCP server)
+python -m figma_mcp.server [--server=<hostname>]
+
+# Start only the relay (optional, for debugging)
 python -m figma_mcp.socket_server
 # or: python src/figma_mcp/socket_server.py
-
-# Start the MCP server
-python -m figma_mcp.server [--server=<hostname>]
-# or: python src/figma_mcp/server.py [--server=<hostname>]
 ```
 
 ## Tests
@@ -88,5 +87,5 @@ Point MCP config to the Python server directly:
 
 - **Tool name contract**: MCP tool names in `tools.py` must exactly match command names expected by `code.js` — they share a string contract.
 - **`join_channel` first**: Must be called before any other tool; `FigmaClient` enforces this with `_channel` state.
-- **Relay is separate**: The relay server (`socket_server.py`) does not run as part of the MCP server — start it independently.
+- **Relay auto-starts**: The relay server starts automatically inside `server.py`'s `main()`. Run `python -m figma_mcp.socket_server` only for isolated debugging.
 - **Manifest network lock**: `src/figma_plugin/manifest.json` only permits `ws://localhost:3055`. Update it for remote/WSS deployments.

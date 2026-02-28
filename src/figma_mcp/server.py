@@ -26,6 +26,7 @@ from .tools import ALL_TOOLS
 from .handlers import handle_tool
 from .utils import ok, err, filter_figma_node, rgba_to_hex
 from .ws_client import FigmaClient
+from .socket_server import start_relay
 
 # ---------------------------------------------------------------------------
 # Logging — ALL output goes to stderr to avoid polluting the MCP stdio transport
@@ -78,14 +79,18 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent | 
 # ---------------------------------------------------------------------------
 
 async def main() -> None:
-    await figma_client.connect()
+    port = int(os.environ.get("PORT", 3055))
+    relay = await start_relay(port=port)
 
-    async with stdio_server() as (read_stream, write_stream):
-        await server.run(
-            read_stream,
-            write_stream,
-            server.create_initialization_options(),
-        )
+    async with relay:
+        await figma_client.connect(port=port)
+
+        async with stdio_server() as (read_stream, write_stream):
+            await server.run(
+                read_stream,
+                write_stream,
+                server.create_initialization_options(),
+            )
 
 
 if __name__ == "__main__":
