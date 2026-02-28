@@ -12,13 +12,12 @@ MCP integration between AI assistants (Cursor, Claude, etc.) and Figma. Enables 
 # Install Python dependencies (from repo root)
 pip install -e .
 
-# Start the WebSocket relay server
+# Start everything (relay + MCP server)
+python -m figma_mcp.server [--server=<hostname>]
+
+# Start only the relay (optional, for debugging)
 python -m figma_mcp.socket_server
 # or: python src/figma_mcp/socket_server.py
-
-# Start the MCP server
-python -m figma_mcp.server [--server=<hostname>]
-# or: python src/figma_mcp/server.py [--server=<hostname>]
 ```
 
 ## Tests
