@@ -21,7 +21,21 @@ python -m figma_mcp.server [--server=<hostname>]
 # or: python src/figma_mcp/server.py [--server=<hostname>]
 ```
 
-No test suite is present in this repository.
+## Tests
+
+```bash
+# Install test dependencies
+pip install -e . pytest pytest-asyncio
+
+# Run the test suite
+pytest tests/
+```
+
+Tests live in `tests/`:
+- `test_utils.py` — pure unit tests for `figma_mcp.utils` (`rgba_to_hex`, `filter_figma_node`, `ok`, `err`)
+- `test_handlers.py` — validation and dispatch tests for `figma_mcp.handlers`
+
+`asyncio_mode = "auto"` is configured in `pyproject.toml`, so async test functions work without decorators. Tests run automatically on push/PR via `.github/workflows/tests.yml`.
 
 ## Architecture
 
