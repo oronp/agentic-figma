@@ -51,7 +51,7 @@ function sendProgressUpdate(
 }
 
 // Show UI
-figma.showUI(__html__, { width: 320, height: 280 });
+figma.showUI(__html__, { width: 320, height: 360 });
 
 // Plugin commands from UI
 figma.ui.onmessage = async (msg) => {
