@@ -9,8 +9,14 @@ Usage:
 import argparse
 import asyncio
 import logging
+import os
 import sys
 from typing import Any, Dict, List
+
+# Allow running directly: python3 src/figma_mcp/server.py
+if __name__ == "__main__" and __package__ is None:
+    sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+    __package__ = "figma_mcp"
 
 from mcp.server import Server
 from mcp.server.stdio import stdio_server
