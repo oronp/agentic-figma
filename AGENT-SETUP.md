@@ -143,19 +143,7 @@ python3 -c "import socket; s=socket.socket(); s.settimeout(2); ok=s.connect_ex((
 
 ---
 
-## Step 5 — Install and Connect the Figma Plugin
-
-Tell the user to:
-
-1. Install the plugin from https://www.figma.com/community/plugin/1485687494525374295
-2. Open any Figma file
-3. Go to **Plugins → Talk to Figma MCP Plugin**
-4. Set the WebSocket URL to `ws://localhost:3055`
-5. Click **Connect** — the status should change to **Connected**
-
----
-
-## Step 6 — Verify
+## Step 5 — Verify
 
 With the relay running and the Figma plugin connected, ask the AI client:
 
