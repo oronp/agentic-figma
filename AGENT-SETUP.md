@@ -11,9 +11,43 @@ python3 --version
 ```
 
 - **Pass:** `Python 3.10.x` or higher → continue to Step 2
-- **Fail:** Below 3.10 or not found → tell the user to download Python 3.10+ from https://www.python.org/downloads/ and reopen their terminal
+- **Fail:** Below 3.10 or not found → install Python via Homebrew (see below)
 
 > On Windows use `python` instead of `python3` throughout this guide.
+
+### Installing Python via Homebrew (macOS / Linux)
+
+**1. Check if Homebrew is installed:**
+
+```bash
+brew --version
+```
+
+**If Homebrew is not found**, install it:
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+
+After installation, follow any shell setup instructions Homebrew prints (e.g. adding it to `PATH`). Then verify:
+
+```bash
+brew --version
+```
+
+**2. Install Python 3:**
+
+```bash
+brew install python3
+```
+
+**3. Confirm the version:**
+
+```bash
+python3 --version
+```
+
+Expected: `Python 3.10.x` or higher. If the shell still reports the old version, open a new terminal tab and retry.
 
 ---
 
