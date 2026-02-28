@@ -48,9 +48,6 @@ class FigmaClient:
 
     async def join_channel(self, channel_name: str) -> Any:
         """Send a join message and wait for the relay to confirm."""
-        if self._ws_conn is None:
-            raise RuntimeError("Not connected to Figma")
-
         result = await self.send_command("join", {"channel": channel_name}, timeout_ms=30000)
         self._channel = channel_name
         logger.info("Joined channel: %s", channel_name)
@@ -136,14 +133,18 @@ class FigmaClient:
                     logger.debug("Received message: %s", json.dumps(my_response))
 
                     req_id = my_response.get("id") if isinstance(my_response, dict) else None
-                    if req_id and req_id in self._pending:
+                    has_result = isinstance(my_response, dict) and my_response.get("result") is not None
+                    has_error = isinstance(my_response, dict) and bool(my_response.get("error"))
+                    if req_id and req_id in self._pending and (has_result or has_error):
                         future = self._pending.pop(req_id)
                         if not future.done():
-                            if my_response.get("error"):
+                            if has_error:
                                 logger.error("Error from Figma: %s", my_response["error"])
                                 future.set_exception(RuntimeError(my_response["error"]))
-                            elif my_response.get("result") is not None:
+                            else:
                                 future.set_result(my_response["result"])
+                    elif req_id and req_id in self._pending:
+                        logger.debug("Ignoring echoed command for id: %s", req_id)
                     else:
                         logger.info(
                             "Received broadcast message: %s", json.dumps(my_response)
