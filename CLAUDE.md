@@ -21,7 +21,12 @@ python -m figma_mcp.server [--server=<hostname>]
 # or: python src/figma_mcp/server.py [--server=<hostname>]
 ```
 
-No test suite is present in this repository.
+## Tests
+
+```bash
+pip install -e . pytest pytest-asyncio
+pytest tests/
+```
 
 ## Architecture
 
