@@ -6,7 +6,7 @@ description: Analyzes a Figma screen, extracts every text style, normalizes it, 
 # Typography System Analysis & Generator
 
 **YOUR MISSION**
-Analyze a Figma screen, extract every text style, normalize it, and build a complete typography system. Then create a structured documentation frame in Figma using TalkToFigma MCP tools.
+Analyze a Figma screen, extract every text style, normalize it, and build a complete typography system. Then create a structured documentation frame in Figma using a single `execute_figma_code` call with the pre-built JS template.
 
 ## STEP 1: GET THE DATA
 
@@ -135,89 +135,72 @@ After presenting all styles, summarize:
 
 ---
 
-## STEP 7: BUILD THE FIGMA FRAME
+## STEP 7: BUILD THE FIGMA FRAME VIA `execute_figma_code`
 
-Use TalkToFigma MCP tools (`create_frame`, `set_layout_mode`, `create_text`, `set_fill_color`, `set_corner_radius`, etc.) to build the documentation frame.
+Do **not** use individual creation tools (`create_frame`, `create_text`, etc.).
+Instead, fill the pre-built JS template and send a **single** `execute_figma_code` call.
 
-**Adapt to the design you analyzed.** Use the primary font family and colors discovered in Steps 1–3 — not hardcoded values. The structure below is a strict template based on standard styling systems:
+### 7a — Prepare the data
 
-### Frame Setup
-- Fill: `#FFFFFF` 
-- Layout: Vertical auto-layout
-- Padding: `135px` top/bottom, `40px` left/right
-- Corner radius: `50`
+Collect these values from Steps 1–6:
 
-### Header Section
-- Fill: `#EAECF2` 
-- Layout: Vertical auto-layout, centered alignment, vertical padding `80px`
-- Title: "Typography- Desktop" (or adapted dynamic title)
-  - Font: Primary font (e.g., `Ploni ML v2 AAA`)
-  - Style: Regular
-  - Size: `80`
-  - Color: `#000000`
-- Subtitle: "See design guideline"
-  - Font: Secondary font (e.g., `Roboto`)
-  - Style: Regular
-  - Size: `24`
-  - Color: `#000000`
+| Placeholder | Value | Example |
+|---|---|---|
+| `{{DOC_TITLE}}` | Frame title | `"Typography — Desktop"` |
+| `{{PRIMARY_FONT}}` | Primary font family | `"Ploni ML v2 AAA"` |
+| `{{SECONDARY_FONT}}` | Secondary / UI font family | `"Roboto"` |
+| `{{WEIGHTS_JSON}}` | JS array of unique weights | see schema below |
+| `{{STYLES_JSON}}` | JS array of normalized styles | see schema below |
+| `{{SAMPLE_TEXT_HEADER}}` | Short 3–4 word phrase (from user) | `"Design System"` |
+| `{{SAMPLE_TEXT_BODY}}` | Short paragraph (from user) | `"Body text goes here."` |
 
-### Font Overview Section
-Immediately below the Header, create a horizontal spec frame for the primary font.
-- **Outer Frame:** Horizontal auto-layout, Border Stroke `#CCCDD5`, Padding `40px`.
-- **Left Column (Font Info):**
-  - Show "Aא" at Size `56`, Right-aligned, Color `#000000`.
-  - Show the Font Family name at Size `22` below it.
-- **Middle Column (Weights):**
-  - Create a horizontal frame containing samples for each weight found in the design.
-  - Each sample: A vertical frame showing "Aא" at Size `56` and the weight name (e.g., "Bold") below it at Size `22`.
-- **Right Column (Character Set):**
-  - Text: Full Hebrew alphabet (`אבגדהוזחטיכלמנסעפצקרשתףךן`), numbers, and symbols (`0123456789!@#$%^&*?)`) 
-  - Size: `56`, Aligned Right, Line Spacing `9px`, Color `#02042B`.
+**`WEIGHTS_JSON` schema** — one entry per unique weight found in the design:
+```json
+[
+  { "name": "Bold",    "style": "Bold" },
+  { "name": "Regular", "style": "Regular" }
+]
+```
+- `name` → column header label shown in the frame
+- `style` → exact Figma font style string (must match what Figma accepts for that family)
 
-### Column Headers Row
-- Create a header row for the table with a bottom stroke `#CCCDD5`.
-- **Dynamic Columns:** 
-  - First column: "System/Specs"
-  - Middle columns: Create a separate column header for *every unique font weight* found in the design (e.g., "Bold", "DemiBold", "Regular").
-  - Last column: "Usage"
-- Layout: Horizontal auto-layout, space evenly
+**`STYLES_JSON` schema** — one entry per normalized style from Step 3:
+```json
+[
+  {
+    "variant":    "H1",
+    "category":   "HEADLINE",
+    "fontFamily": "Ploni ML v2 AAA",
+    "fontStyle":  "Bold",
+    "size":       32,
+    "lineHeight": 40,
+    "weightName": "Bold",
+    "usage":      "Main page titles",
+    "isBody":     false
+  }
+]
+```
+- `category` — one of: `DISPLAY`, `HEADLINE`, `TITLE`, `BODY`, `LABEL`
+- `fontStyle` — must be the exact Figma style string for that family
+- `weightName` — must match a `name` value in `WEIGHTS_JSON`
+- `isBody` — `true` for BODY/LABEL rows (uses `SAMPLE_BODY`), `false` otherwise
 
-### Typography Rows (one per normalized style)
-Each row represents a specific style (e.g., H1, Body | L):
-- **Row Styling:** Horizontal auto-layout, Fill Container, Padding `32px`, Border Stroke `#CCCDD5`
+### 7b — Fill the template
 
-**Left Column — Specs:**
-- Layout: Vertical auto-layout
-- Category tag: Frame with background `#FFF7F3`, Corner radius `12`
-  - Text: The Style Category (e.g., "H1", "Body | L") at Size `24`, Color `#363636`
-- Spec details: Horizontal row indicating size and line height
-  - Background: `#F9F9F9`, Corner radius `5` 
-  - Text inside chip: `Aa` (Size `12`, Color `#7281A7`)
-  - Text next to chip: `[Size]px` (Size `20`, Color `#363636`) and `[LineHeight]px` (Size `20`, Color `#363636`)
+1. Read the file `skills/typography_system/template.js`
+2. Replace every `{{PLACEHOLDER}}` with its real value:
+   - String placeholders → replace the whole `"{{TOKEN}}"` (including quotes) with a quoted string literal
+   - Array placeholders (`{{WEIGHTS_JSON}}`, `{{STYLES_JSON}}`) → replace the bare `{{TOKEN}}` (no surrounding quotes) with the raw JS array literal
+3. **Do not modify any other part of the template.**
 
-**Middle Columns — Examples per Weight:**
-- **Dynamic Columns:** Instead of one single "examples" column, create a separate column for *each weight* defined in the header row.
-- Content: Drop the sample text (provided by the user in Step 7) into the correct weight column.
-- Color: `#02042B` or `#363636` (match the source design exactly).
-- If a specific style doesn't use a certain weight, leave that column space empty to maintain alignment.
+### 7c — Execute
 
-**Right Column — Usage:**
-- Layout: Standard text block
-- Content: Explain the explicit purpose of the text.
-- Styling: Size `20`, Centered vertically, Color `#363636`
+Send the filled-in script via one tool call:
+```
+execute_figma_code(code = <filled-in template content>)
+```
 
-### Strict Tool Constraints
-You MUST use TalkToFigma tools correctly to enforce ALL layout structures exactly as specified above. 
-- Use exact hex codes. Never guess colors.
-- Use explicit `set_layout_mode` to ensure grid alignments. No random node positioning.
-
-### Generation Order
-For every normalized style from Step 3:
-1. Create a row frame
-2. Populate left column with specs
-3. Populate the middle weight columns with the appropriate sample text
-4. Populate right column with the usage purpose
-5. Append row to the main typography frame
+The tool returns `{ success, nodeId, message }`. Report the result to the user.
 
 ---
 
@@ -229,7 +212,7 @@ For every normalized style from Step 3:
 4. Map to type scale; note custom slots
 5. Filter outliers
 6. Present the full analysis (Step 5) to the user and wait for confirmation
-7. Ask the user for sample text to use in the design:
-   - One short sentence (3-4 words) for Headers
-   - One short paragraph for Body text
-8. Build the Figma documentation frame
+7. Ask the user for sample text:
+   - One short sentence (3–4 words) for heading rows
+   - One short paragraph for body rows
+8. Read `skills/typography_system/template.js`, fill all `{{PLACEHOLDERS}}`, call `execute_figma_code`
