@@ -1,145 +1,129 @@
-# Talk to Figma — Setup Guide
+# MCP Setup Guide — Talk to Figma
 
-Connect **Claude Desktop** to your Figma designs. Once set up, you can ask Claude to read, inspect, and edit your Figma files in plain English — no coding required.
-
----
-
-## What You Need
-
-- [Claude Desktop](https://claude.ai/download) installed on your computer
-- [Python 3.10 or higher](https://www.python.org/downloads/) installed
-- A Figma account with at least one file open
+> **For AI agents:** Parse and execute the steps below in order on behalf of the user. Each step includes the command to run and its expected result.
 
 ---
 
-## One-Time Setup
+## Step 1 — Check Python
 
-### Step 1 — Get the project files
-
-On this page, click the green **Code** button → **Download ZIP**. Unzip the folder somewhere easy to find (Desktop or Documents works great).
-
-### Step 2 — Install Python 3.10+
-
-**Already have Python?** Skip this step if `python3 --version` (Mac) or `python --version` (Windows) shows 3.10 or higher.
-
-**Mac:**
-1. Go to [python.org/downloads](https://www.python.org/downloads/) and download the latest installer
-2. Run it and accept the defaults
-3. Open a new Terminal window and confirm: `python3 --version`
-
-**Windows:**
-1. Go to [python.org/downloads](https://www.python.org/downloads/) and download the latest installer
-2. Run it — **on the first screen, check "Add Python to PATH"** before clicking Install
-3. Open a new PowerShell window and confirm: `python --version`
-
-### Step 3 — Run the start script
-
-Open a terminal in the project folder and run:
-
-**Mac / Linux:**
 ```bash
-python3 start.py
+python3 --version
 ```
 
-**Windows:**
+- **Pass:** `Python 3.10.x` or higher → continue to Step 2
+- **Fail:** Below 3.10 or not found → tell the user to download Python 3.10+ from https://www.python.org/downloads/ and reopen their terminal
+
+> On Windows use `python` instead of `python3` throughout this guide.
+
+---
+
+## Step 2 — Install Dependencies
+
+From the repo root:
+
+```bash
+pip3 install -e .
 ```
+
+Expected: output ends with `Successfully installed ...`
+
+Verify:
+```bash
+python3 -c "import figma_mcp; print('ok')"
+```
+
+> On Windows use `pip` instead of `pip3`.
+
+---
+
+## Step 3 — Configure the AI Client
+
+Find the `figma-mcp` binary installed in the previous step:
+
+```bash
+python3 -c "import shutil, sys, pathlib; p=shutil.which('figma-mcp'); print(p if p else pathlib.Path(sys.executable).parent / 'figma-mcp')"
+```
+
+Use the path it prints as `<figma-mcp-path>` in the config below.
+
+### Claude Desktop
+
+| OS      | Config file location |
+|---------|----------------------|
+| macOS   | `~/Library/Application Support/Claude/claude_desktop_config.json` |
+| Windows | `%APPDATA%\Claude\claude_desktop_config.json` |
+
+```json
+{
+  "mcpServers": {
+    "TalkToFigma": {
+      "command": "<figma-mcp-path>"
+    }
+  }
+}
+```
+
+If the file already has content, merge the `"TalkToFigma"` block into the existing `"mcpServers"` object.
+
+### Cursor
+
+Create or update `.cursor/mcp.json` in the project root with the same JSON above.
+
+After saving the config, ask the user to **fully restart** their AI client.
+
+---
+
+## Step 4 — Start the WebSocket Relay
+
+Tell the user to open a terminal in the project folder and run:
+
+```bash
+# macOS / Linux
+python3 start.py
+
+# Windows
 python start.py
 ```
 
-> **How to open a terminal in the project folder:**
-> - **Mac:** Open Terminal, then drag the project folder into the Terminal window and press Enter
-> - **Windows:** Hold **Shift** and right-click the project folder → **Open PowerShell window here**
+`start.py` handles first-time venv setup automatically and then starts the relay on port 3055. **The terminal must stay open** while the plugin is in use.
 
-The first run installs everything automatically (takes about a minute). After that it prints the configuration you need for the next step, then starts the relay server.
+Verify the relay is up:
 
-### Step 4 — Configure Claude Desktop
-
-After running `start.py`, you'll see something like this in the terminal:
-
+```bash
+python3 -c "import socket; s=socket.socket(); s.settimeout(2); ok=s.connect_ex(('localhost',3055))==0; s.close(); print('relay running' if ok else 'relay NOT running')"
 ```
-============================================================
-  CLAUDE DESKTOP CONFIGURATION
-============================================================
-
-  1. Open this file (create it if it doesn't exist):
-     /Users/yourname/Library/Application Support/Claude/claude_desktop_config.json
-
-  2. Paste the following into the file:
-
-     {
-       "mcpServers": {
-         "TalkToFigma": {
-           "command": "/Users/yourname/projects/talk-to-figma-mcp/.venv/bin/figma-mcp"
-         }
-       }
-     }
-```
-
-Follow those instructions:
-
-1. Open the config file shown (use a plain text editor like TextEdit on Mac or Notepad on Windows)
-2. Paste in the JSON block exactly as shown
-3. If the file already has content, add the `"TalkToFigma"` block inside the existing `"mcpServers"` section
-4. Save the file
-5. **Fully quit and reopen Claude Desktop** (on Mac: ⌘Q, on Windows: right-click the tray icon → Quit)
-
-**Finding the config file if you can't locate it:**
-- **Mac:** In Finder, press `Cmd + Shift + G`, paste `~/Library/Application Support/Claude/` and press Enter
-- **Windows:** Press `Win + R`, type `%APPDATA%\Claude\` and press Enter
-
-### Step 5 — Install the Figma plugin
-
-1. Open the [Talk to Figma MCP plugin page](https://www.figma.com/community/plugin/1485687494525374295)
-2. Click **Install**
-3. Open any Figma file
-4. Click the **Plugins** menu → **Talk to Figma MCP Plugin**
-5. Set the WebSocket URL to: `ws://localhost:3055`
-6. Click **Connect** — the status should change to **Connected**
 
 ---
 
-## Daily Use
+## Step 5 — Install and Connect the Figma Plugin
 
-Each time you want to use Talk to Figma:
+Tell the user to:
 
-1. **Start the relay** — open a terminal in the project folder and run `python3 start.py` (Mac) or `python start.py` (Windows). Keep this window open.
-2. **Open Figma** — open the plugin (Plugins → Talk to Figma MCP Plugin) and click **Connect**
-3. **Open Claude Desktop** — it connects to the MCP server automatically
+1. Install the plugin from https://www.figma.com/community/plugin/1485687494525374295
+2. Open any Figma file
+3. Go to **Plugins → Talk to Figma MCP Plugin**
+4. Set the WebSocket URL to `ws://localhost:3055`
+5. Click **Connect** — the status should change to **Connected**
 
-Then in Claude, start by saying:
-> "Join the channel"
+---
 
-After that, try:
-- *"What's in my Figma document?"*
-- *"List all the text layers"*
-- *"Change the button background to blue"*
+## Step 6 — Verify
+
+With the relay running and the Figma plugin connected, ask the AI client:
+
+1. `join_channel` → expect a success message
+2. `get_document_info` → expect JSON describing the open Figma file
+
+If both return results, setup is complete.
 
 ---
 
 ## Troubleshooting
 
-**Python not found after installing**
-Close your terminal, open a new one, and try again. On Mac use `python3`; on Windows use `python`.
-
-**First-time setup fails**
-Make sure you have an internet connection. If you see a permissions error on Mac/Linux, try:
-```bash
-python3 -m venv .venv && .venv/bin/pip install -e . -q
-```
-
-**"Port 3055 is already in use"**
-Another copy of the relay is already running. Find the terminal window where `start.py` is running and press **Ctrl+C** to stop it, then run `start.py` again.
-
-**Claude Desktop doesn't show TalkToFigma as connected**
-- Confirm the config file is saved and contains valid JSON (no missing commas or brackets)
-- Fully quit Claude Desktop (not just close the window) and reopen it
-- Make sure the path in the config points to your actual project folder
-
-**Figma plugin won't connect**
-- Make sure `start.py` is still running in the terminal
-- Check that the URL in the plugin is exactly `ws://localhost:3055`
-- Try clicking **Disconnect**, then **Connect** again
-- Refresh the Figma page and reconnect
-
-**Claude can read Figma but changes don't show up**
-Make sure you're working in an open Figma file and the plugin shows **Connected**. Ask Claude to `join_channel` again if needed.
+| Symptom | Fix |
+|---------|-----|
+| `pip3 install` permission error | Re-run with `pip3 install --user -e .` |
+| Port 3055 already in use | Stop the existing relay (`Ctrl+C` in its terminal), then re-run `start.py` |
+| Plugin won't connect | Confirm relay is running (Step 4 verify command), then click Disconnect → Connect in the plugin |
+| MCP not detected in AI client | Double-check the config file path and JSON validity; fully restart the client |
+| `figma-mcp` path not found | Use the full venv path: `<repo>/.venv/bin/figma-mcp` (macOS/Linux) or `<repo>\.venv\Scripts\figma-mcp.exe` (Windows) |
