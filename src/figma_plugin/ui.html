@@ -430,9 +430,14 @@
       }
 
       document.getElementById("btn-copy-channel").addEventListener("click", () => {
-        if (state.channel) {
-          navigator.clipboard.writeText(state.channel).then(() => showToast("Copied!"));
-        }
+        if (!state.channel) return;
+        const tmp = document.createElement("input");
+        tmp.value = state.channel;
+        document.body.appendChild(tmp);
+        tmp.select();
+        document.execCommand("copy");
+        document.body.removeChild(tmp);
+        showToast("Copied!");
       });
 
       // Connect to WebSocket server
