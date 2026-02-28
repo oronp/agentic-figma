@@ -143,17 +143,6 @@ python3 -c "import socket; s=socket.socket(); s.settimeout(2); ok=s.connect_ex((
 
 ---
 
-## Step 5 — Verify
-
-With the relay running and the Figma plugin connected, ask the AI client:
-
-1. `join_channel` → expect a success message
-2. `get_document_info` → expect JSON describing the open Figma file
-
-If both return results, setup is complete.
-
----
-
 ## Troubleshooting
 
 | Symptom | Fix |
