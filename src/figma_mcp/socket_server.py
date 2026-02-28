@@ -18,6 +18,7 @@ import sys
 from typing import Dict, Set
 
 import websockets
+from websockets.legacy.server import WebSocketServer
 from websockets.server import ServerConnection
 
 logging.basicConfig(
@@ -146,7 +147,7 @@ async def handler(ws: ServerConnection) -> None:
                         clients.discard(client)
 
 
-async def start_relay(port: int = 3055):
+async def start_relay(port: int = 3055) -> WebSocketServer:
     """Start the WebSocket relay server and return the server object (non-blocking)."""
     server = await websockets.serve(handler, "0.0.0.0", port)
     logger.info("WebSocket relay started on port %d", port)

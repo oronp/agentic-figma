@@ -1,4 +1,3 @@
-import asyncio
 import pytest
 from figma_mcp.socket_server import start_relay
 
