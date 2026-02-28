@@ -617,7 +617,7 @@ ALL_TOOLS: List[Tool] = [
         },
     ),
     Tool(
-        name="execute_code",
+        name="execute_figma_code",
         description=(
             "Execute arbitrary JavaScript code in the Figma plugin context. "
             "The code runs as the body of an async function with `figma` (full Figma Plugin API) "

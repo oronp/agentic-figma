@@ -531,8 +531,8 @@ async def _set_selections(args: Dict, client: FigmaClient):
 async def _execute_code(args: Dict, client: FigmaClient):
     code = args.get("code")
     if not code or not isinstance(code, str) or not code.strip():
-        return err("execute_code requires a non-empty code string")
-    result = await client.send_command("execute_code", {"code": code}, timeout_ms=120000)
+        return err("execute_figma_code requires a non-empty code string")
+    result = await client.send_command("execute_figma_code", {"code": code}, timeout_ms=120000)
     return ok(result)
 
 
@@ -586,7 +586,7 @@ _DISPATCH: Dict[str, _Handler] = {
     "create_connections": _create_connections,
     "set_focus": _set_focus,
     "set_selections": _set_selections,
-    "execute_code": _execute_code,
+    "execute_figma_code": _execute_code,
     "join_channel": _join_channel,
 }
 

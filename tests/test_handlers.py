@@ -386,12 +386,12 @@ async def test_set_selections_non_list():
 
 
 async def test_execute_code_missing_code():
-    result = await handle_tool("execute_code", {}, make_client())
+    result = await handle_tool("execute_figma_code", {}, make_client())
     assert "non-empty" in text_of(result)
 
 
 async def test_execute_code_empty_string():
-    result = await handle_tool("execute_code", {"code": "   "}, make_client())
+    result = await handle_tool("execute_figma_code", {"code": "   "}, make_client())
     assert "non-empty" in text_of(result)
 
 

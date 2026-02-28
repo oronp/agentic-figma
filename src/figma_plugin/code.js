@@ -233,7 +233,7 @@ async function handleCommand(command, params) {
       return await setFocus(params);
     case "set_selections":
       return await setSelections(params);
-    case "execute_code": {
+    case "execute_figma_code": {
       if (\!params || typeof params.code \!== "string" || params.code.trim().length === 0) {
         throw new Error("Missing or invalid code parameter");
       }
