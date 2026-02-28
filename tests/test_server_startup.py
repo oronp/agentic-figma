@@ -1,4 +1,5 @@
 import asyncio
+import json
 import pytest
 import websockets
 from figma_mcp.socket_server import start_relay
@@ -11,7 +12,6 @@ async def test_relay_starts_and_accepts_connections():
     try:
         async with websockets.connect("ws://localhost:13056") as ws:
             msg = await asyncio.wait_for(ws.recv(), timeout=2)
-            import json
             data = json.loads(msg)
             assert data["type"] == "system"
     finally:
