@@ -1,6 +1,7 @@
 .cursor/
 .idea/
 .venv/
+venv/
 .env
 docs/
 /src/python_mcp/.venv/
