@@ -1,424 +1,154 @@
-# README for AI Agent: MCP Setup Guide for talk-to-figma-mcp
+# MCP Setup Guide — Talk to Figma
 
-## 🤖 AI Agent Decision Flow
-
-```mermaid
-flowchart TD
-    A[Start Setup] --> B{Python 3 Available?}
-    B -->|✅ Yes| C[Install Dependencies]
-    B -->|❌ No| D[Install Python 3]
-    D --> C
-    C --> E[Configure MCP]
-    E --> F[Start WebSocket Relay]
-    F --> G[Install Figma Plugin]
-    G --> H[Test Integration]
-    H --> I[✅ Complete]
-```
-
-## 🎯 Objective
-
-Set up the **MCP server** for talk-to-figma-mcp so your AI agent (Cursor, Claude Desktop, etc.) can read and modify Figma designs through natural language.
-
-This guide uses Python 3 and pip — no Node.js, no Bun, no build step required.
-
-### 🤖 For AI Agents Reading This Guide
-
-This guide is designed for AI agents to parse and execute autonomously. Each section includes:
-
-- **Clear checkpoint validations** before proceeding
-- **Copy-paste commands** with expected outputs
-- **Mermaid progress diagrams** to track and report status
-- **Inline Windows notes** where commands differ
-
-**AI Agent Instructions:**
-1. Execute each command and verify the expected output
-2. Update the progress diagram at every checkpoint
-3. If a step fails, follow the troubleshooting section
-4. Always validate checkpoints before continuing
-
-## 📋 System Environment Detection
-
-**AI AGENTS**: Run these commands first and store results for later decisions.
-
-```bash
-echo "=== PYTHON ENVIRONMENT DETECTION ==="
-
-# 1. Operating System
-OS_TYPE=$(uname -s)
-echo "OS_TYPE: $OS_TYPE"
-
-# 2. Python 3 availability
-PYTHON_AVAILABLE=$(which python3 >/dev/null 2>&1 && echo "YES" || echo "NO")
-if [ "$PYTHON_AVAILABLE" = "YES" ]; then
-    PYTHON_VERSION=$(python3 --version 2>&1)
-    echo "PYTHON_VERSION: $PYTHON_VERSION"
-else
-    echo "PYTHON_AVAILABLE: NO"
-fi
-
-# 3. pip3 availability
-PIP_AVAILABLE=$(which pip3 >/dev/null 2>&1 && echo "YES" || echo "NO")
-if [ "$PIP_AVAILABLE" = "YES" ]; then
-    PIP_VERSION=$(pip3 --version 2>&1)
-    echo "PIP_VERSION: $PIP_VERSION"
-else
-    echo "PIP_AVAILABLE: NO"
-fi
-
-# 4. Git availability
-GIT_AVAILABLE=$(which git >/dev/null 2>&1 && echo "YES" || echo "NO")
-echo "GIT_AVAILABLE: $GIT_AVAILABLE"
-
-echo "=== DETECTION COMPLETE ==="
-```
-
-> **Windows note:** Replace `python3` with `python` and `pip3` with `pip` in all commands throughout this guide.
-
-## 📊 AI Agent Progress Tracking
-
-**AI AGENTS MUST CREATE THIS DIAGRAM** after environment detection and update it at each checkpoint:
-
-```mermaid
-graph TD
-    A[🐍 Python Check] --> B[📦 Install Dependencies]
-    B --> C[⚙️ Configure MCP]
-    C --> D[🌐 Start WebSocket Relay]
-    D --> E[🔌 Figma Plugin]
-    E --> F[🧪 Integration Test]
-    F --> G[✅ Setup Complete]
-
-    classDef completed fill:#22c55e,stroke:#16a34a,stroke-width:2px,color:#fff
-    classDef current fill:#3b82f6,stroke:#2563eb,stroke-width:2px,color:#fff
-    classDef pending fill:#6b7280,stroke:#4b5563,stroke-width:2px,color:#fff
-    classDef failed fill:#ef4444,stroke:#dc2626,stroke-width:2px,color:#fff
-```
-
-### Status Indicators
-- ✅ **COMPLETED** — Step finished successfully
-- 🔄 **CURRENT** — Currently executing
-- ⏳ **PENDING** — Not started
-- ❌ **FAILED** — Needs attention
-
-### 📍 Mandatory Progress Update Points
-
-AI Agents MUST update the diagram at these checkpoints:
-1. After Python check (Step 1)
-2. After dependency installation (Step 2)
-3. After MCP configuration (Step 3)
-4. After WebSocket relay starts (Step 4)
-5. After Figma plugin connects (Step 5)
-6. After integration test (Step 6)
-
-**Example update** (after Step 1 completes):
-
-```mermaid
-graph TD
-    A[🐍 Python Check] --> B[📦 Install Dependencies]
-    B --> C[⚙️ Configure MCP]
-    C --> D[🌐 Start WebSocket Relay]
-    D --> E[🔌 Figma Plugin]
-    E --> F[🧪 Integration Test]
-    F --> G[✅ Setup Complete]
-
-    class A completed
-    class B current
-    class C,D,E,F,G pending
-
-    classDef completed fill:#22c55e,stroke:#16a34a,stroke-width:2px,color:#fff
-    classDef current fill:#3b82f6,stroke:#2563eb,stroke-width:2px,color:#fff
-    classDef pending fill:#6b7280,stroke:#4b5563,stroke-width:2px,color:#fff
-    classDef failed fill:#ef4444,stroke:#dc2626,stroke-width:2px,color:#fff
-```
-
-## 🚀 Step-by-Step Setup
+> **For AI agents:** Parse and execute the steps below in order on behalf of the user. Each step includes the command to run and its expected result.
 
 ---
 
-### Step 1: Verify or Install Python 3
+## Step 1 — Check Python
 
 ```bash
 python3 --version
 ```
 
-Expected output: `Python 3.10.x` or higher.
+- **Pass:** `Python 3.10.x` or higher → continue to Step 2
+- **Fail:** Below 3.10 or not found → install Python via Homebrew (see below)
 
-**✅ If Python 3.10+ is shown** — proceed to Step 2.
+> On Windows use `python` instead of `python3` throughout this guide.
 
-**❌ If command not found or version is below 3.10:**
+### Installing Python via Homebrew (macOS / Linux)
 
-**macOS:**
+**1. Check if Homebrew is installed:**
+
 ```bash
-# Option A: via Homebrew (recommended if you have it)
-brew install python3
-
-# Option B: Download installer from https://www.python.org/downloads/
-# After installing, reopen your terminal and run python3 --version again
+brew --version
 ```
 
-> **Windows note:** Download from https://www.python.org/downloads/ and tick "Add Python to PATH" during installation. Use `python` instead of `python3` everywhere in this guide.
+**If Homebrew is not found**, install it:
 
-**CHECKPOINT 1** ✅ — `python3 --version` shows 3.10 or higher.
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
 
-**AI AGENTS**: Update progress diagram — mark `🐍 Python Check` as **completed**, `📦 Install Dependencies` as **current**.
+After installation, follow any shell setup instructions Homebrew prints (e.g. adding it to `PATH`). Then verify:
+
+```bash
+brew --version
+```
+
+**2. Install Python 3:**
+
+```bash
+brew install python3
+```
+
+**3. Confirm the version:**
+
+```bash
+python3 --version
+```
+
+Expected: `Python 3.10.x` or higher. If the shell still reports the old version, open a new terminal tab and retry.
 
 ---
 
-### Step 2: Install Dependencies
+## Step 2 — Install Dependencies
 
-From the **repo root** directory:
+From the repo root:
 
 ```bash
 pip3 install -e .
 ```
 
-Expected output: Lines ending with `Successfully installed talk-to-figma-mcp-...`
+Expected: output ends with `Successfully installed ...`
 
-**⚠️ If you see a permissions error:**
+Verify:
 ```bash
-pip3 install --user -e .
+python3 -c "import figma_mcp; print('ok')"
 ```
 
-> **Windows note:** Use `pip` instead of `pip3`.
-
-**CHECKPOINT 2** ✅ — No errors shown. Installation succeeded.
-
-**AI AGENTS**: Update progress diagram — mark `📦 Install Dependencies` as **completed**, `⚙️ Configure MCP` as **current**.
+> On Windows use `pip` instead of `pip3`.
 
 ---
 
-### Step 3: Configure MCP in Your AI Agent
+## Step 3 — Configure the AI Client
 
-First, find your Python 3 path:
+### Cursor
 
-```bash
-which python3
-# Example output: /usr/local/bin/python3
-```
-
-> **Windows note:** Run `where python` in Command Prompt. Use the path shown.
-
-Then find the full path to `server.py` in this repo:
-
-```bash
-realpath src/mcp/server.py
-# Example output: /Users/yourname/projects/talk-to-figma-mcp/src/mcp/server.py
-```
-
-**For Cursor:** Create or edit `.cursor/mcp.json` in this project:
+**No action needed.** `.cursor/mcp.json` is already committed to the repo and uses a relative path that works on every machine:
 
 ```json
 {
   "mcpServers": {
     "TalkToFigma": {
-      "command": "/usr/local/bin/python3",
-      "args": ["/Users/yourname/projects/talk-to-figma-mcp/src/mcp/server.py"]
+      "command": "python3",
+      "args": ["src/figma_mcp/server.py"]
     }
   }
 }
 ```
 
-**For Claude Desktop:** Edit `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS):
+Fully quit and reopen Cursor to pick it up. TalkToFigma should appear as connected in Cursor Settings → MCP.
+
+### Claude Desktop
+
+Find the absolute path to `server.py` in this repo:
+
+```bash
+realpath src/figma_mcp/server.py
+```
+
+Then write the following to the Claude Desktop config file, replacing `<absolute-path-to-server.py>` with the output above:
+
+| OS      | Config file location |
+|---------|----------------------|
+| macOS   | `~/Library/Application Support/Claude/claude_desktop_config.json` |
+| Windows | `%APPDATA%\Claude\claude_desktop_config.json` |
 
 ```json
 {
   "mcpServers": {
     "TalkToFigma": {
-      "command": "/usr/local/bin/python3",
-      "args": ["/Users/yourname/projects/talk-to-figma-mcp/src/mcp/server.py"]
+      "command": "python3",
+      "args": ["<absolute-path-to-server.py>"]
     }
   }
 }
 ```
 
-> **Windows note:** Config file is at `%APPDATA%\Claude\claude_desktop_config.json`. Use `python` as the command and Windows-style paths (e.g., `C:\\Users\\yourname\\...`).
+If the file already has content, merge the `"TalkToFigma"` block into the existing `"mcpServers"` object.
 
-After saving the config, **restart your AI agent** to pick up the change.
-
-**CHECKPOINT 3** ✅ — MCP config file saved and app restarted. Verify TalkToFigma shows as "Connected" in Settings → MCP.
-
-**AI AGENTS**: Update progress diagram — mark `⚙️ Configure MCP` as **completed**, `🌐 Start WebSocket Relay` as **current**.
+Fully restart Claude Desktop after saving.
 
 ---
 
-### Step 4: Start the WebSocket Relay Server
+## Step 4 — Start the WebSocket Relay
 
-Open a **dedicated terminal** and run:
-
-```bash
-python3 src/mcp/socket_server.py > relay.log 2>&1
-```
-
-This terminal will become unresponsive — that means the relay is running correctly. **Keep it open.**
-
-To monitor logs in a second terminal:
-```bash
-tail -f relay.log
-```
-
-You should see: `WebSocket server running on port 3055`
-
-To stop the relay later: press `Ctrl+C` in its terminal.
-
-**Verify the relay is running:**
-```bash
-lsof -i :3055 && echo "✅ Relay running on port 3055" || echo "❌ Relay not running"
-```
-
-> **Windows note:** Use `netstat -an | findstr 3055` to check the port.
-
-**CHECKPOINT 4** ✅ — `relay.log` shows "WebSocket server running on port 3055".
-
-**AI AGENTS**: Update progress diagram — mark `🌐 Start WebSocket Relay` as **completed**, `🔌 Figma Plugin` as **current**.
-
----
-
-### Step 5: Install and Connect the Figma Plugin
-
-#### Install the Plugin
-
-1. Open the plugin page: https://www.figma.com/community/plugin/1485687494525374295/cursor-talk-to-figma-mcp-plugin
-2. Click **"Install"**
-
-#### Connect to the Relay
-
-1. Open any Figma file
-2. Go to `Plugins` menu → `Talk to Figma MCP Plugin`
-3. In the plugin panel, set the WebSocket URL to: `ws://localhost:3055`
-4. Click **"Connect"**
-
-The plugin should show a **"Connected"** status. Your relay terminal will log a new connection.
-
-**CHECKPOINT 5** ✅ — Plugin shows "Connected". Relay log shows a new connection message.
-
-**AI AGENTS**: Update progress diagram — mark `🔌 Figma Plugin` as **completed**, `🧪 Integration Test` as **current**.
-
----
-
-### Step 6: Test the Integration
-
-In your AI agent (with MCP connected), run these commands:
-
-**Test 1 — Join a channel:**
-```
-join_channel
-```
-Expected: "Successfully joined channel" message.
-
-**Test 2 — Read your Figma document:**
-```
-get_document_info
-```
-Expected: JSON data describing your open Figma file.
-
-**CHECKPOINT 6** ✅ — Both commands return successful responses.
-
-**AI AGENTS**: Update progress diagram — mark ALL nodes as **completed**:
-
-```mermaid
-graph TD
-    A[🐍 Python Check] --> B[📦 Install Dependencies]
-    B --> C[⚙️ Configure MCP]
-    C --> D[🌐 Start WebSocket Relay]
-    D --> E[🔌 Figma Plugin]
-    E --> F[🧪 Integration Test]
-    F --> G[✅ Setup Complete]
-
-    class A,B,C,D,E,F,G completed
-
-    classDef completed fill:#22c55e,stroke:#16a34a,stroke-width:2px,color:#fff
-```
-
-🎉 **Setup complete! Your AI assistant can now read and modify Figma designs.**
-
-## 🔍 Troubleshooting
-
-### Python Not Found
+Tell the user to open a terminal in the project folder and run:
 
 ```bash
-# macOS: install via Homebrew
-brew install python3
+# macOS / Linux
+python3 start.py
 
-# macOS: or download from python.org
-# https://www.python.org/downloads/
+# Windows
+python start.py
+```
 
-# After installing, open a new terminal and retry:
-python3 --version
+`start.py` handles first-time venv setup automatically and then starts the relay on port 3055. **The terminal must stay open** while the plugin is in use.
+
+Verify the relay is up:
+
+```bash
+python3 -c "import socket; s=socket.socket(); s.settimeout(2); ok=s.connect_ex(('localhost',3055))==0; s.close(); print('relay running' if ok else 'relay NOT running')"
 ```
 
 ---
 
-### pip3 Fails — Permission Error
+## Troubleshooting
 
-```bash
-# Use --user flag to install to your home directory
-pip3 install --user -e .
-```
-
----
-
-### Port 3055 Already in Use
-
-```bash
-# Find and kill the process using port 3055
-lsof -ti:3055 | xargs kill -9 2>/dev/null || true
-
-# Wait 2 seconds, then restart the relay
-python3 src/mcp/socket_server.py > relay.log 2>&1
-```
-
-> **Windows note:** Run `netstat -ano | findstr 3055` to find the PID, then `taskkill /PID <pid> /F`.
-
----
-
-### Figma Plugin Not Connecting
-
-1. Verify the relay is running: `lsof -i :3055`
-2. Check relay.log: `tail relay.log` — look for errors
-3. In the Figma plugin, confirm the URL is exactly `ws://localhost:3055`
-4. Click Disconnect then Connect in the plugin panel
-5. Refresh the Figma page and try again
-
----
-
-### MCP Not Detected in AI Agent
-
-1. Verify the config file path is correct (see Step 3 above)
-2. Confirm the `python3` path in the config matches `which python3`
-3. Confirm the `server.py` path in the config is the full absolute path
-4. Restart the app after any config change
-5. Check Settings → MCP — TalkToFigma should appear as "Connected"
-
-## ✅ Success Verification Matrix
-
-**AI Agents: verify ALL conditions before marking setup complete.**
-
-```bash
-echo "=== FINAL VERIFICATION ==="
-
-# Python runtime
-python3 --version && echo "✅ Python 3 available" || echo "❌ Python 3 missing"
-
-# Dependencies installed
-python3 -c "import mcp; import websockets; print('✅ Dependencies installed')" 2>/dev/null || echo "❌ Dependencies missing — run: pip3 install -e ."
-
-# MCP config present (Cursor)
-test -f .cursor/mcp.json && echo "✅ Cursor MCP config present" || echo "⚠️  No .cursor/mcp.json — check Claude Desktop config instead"
-
-# WebSocket relay running
-lsof -i :3055 >/dev/null 2>&1 && echo "✅ WebSocket relay running on port 3055" || echo "❌ Relay not running — start it: python3 src/mcp/socket_server.py"
-
-echo "=== VERIFICATION COMPLETE ==="
-```
-
-### ✅ All of the following must be true for a successful setup:
-
-- ✅ `python3 --version` returns 3.10 or higher
-- ✅ `mcp` and `websockets` packages installed (`pip3 install -e .`)
-- ✅ MCP config file present with correct paths
-- ✅ AI agent restarted and TalkToFigma shows "Connected"
-- ✅ WebSocket relay running on port 3055
-- ✅ Figma plugin connected (shows "Connected", relay log shows connection)
-- ✅ `join_channel` returns success
-- ✅ `get_document_info` returns Figma document data
-
-**If any item shows ❌ — follow the Troubleshooting section above.**
+| Symptom | Fix |
+|---------|-----|
+| `pip3 install` permission error | Re-run with `pip3 install --user -e .` |
+| Port 3055 already in use | Stop the existing relay (`Ctrl+C` in its terminal), then re-run `start.py` |
+| Plugin won't connect | Confirm relay is running (Step 4 verify command), then click Disconnect → Connect in the plugin |
+| MCP not detected in AI client | Double-check the config file path and JSON validity; fully restart the client |
+| `figma-mcp` path not found | Use the full venv path: `<repo>/.venv/bin/figma-mcp` (macOS/Linux) or `<repo>\.venv\Scripts\figma-mcp.exe` (Windows) |
