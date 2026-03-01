@@ -121,25 +121,19 @@ Fully restart Claude Desktop after saving.
 
 ---
 
-## Step 4 — Start the WebSocket Relay
+## Step 4 — Start the AI Client
 
-Tell the user to open a terminal in the project folder and run:
+No separate relay startup is needed. The WebSocket relay now starts automatically inside the MCP server process when the AI client launches it.
 
-```bash
-# macOS / Linux
-python3 start.py
+Simply open (or restart) your AI client after completing Step 3. The relay will come up on port 3055 automatically.
 
-# Windows
-python start.py
-```
-
-`start.py` handles first-time venv setup automatically and then starts the relay on port 3055. **The terminal must stay open** while the plugin is in use.
-
-Verify the relay is up:
+Verify the relay is up after the AI client has started:
 
 ```bash
 python3 -c "import socket; s=socket.socket(); s.settimeout(2); ok=s.connect_ex(('localhost',3055))==0; s.close(); print('relay running' if ok else 'relay NOT running')"
 ```
+
+> **Custom port:** Set the `PORT` environment variable in your MCP config to use a port other than 3055, for example `"env": {"PORT": "3056"}`.
 
 ---
 
@@ -148,7 +142,7 @@ python3 -c "import socket; s=socket.socket(); s.settimeout(2); ok=s.connect_ex((
 | Symptom | Fix |
 |---------|-----|
 | `pip3 install` permission error | Re-run with `pip3 install --user -e .` |
-| Port 3055 already in use | Stop the existing relay (`Ctrl+C` in its terminal), then re-run `start.py` |
+| Port 3055 already in use | No action needed — the server detects this and reuses the existing relay automatically |
 | Plugin won't connect | Confirm relay is running (Step 4 verify command), then click Disconnect → Connect in the plugin |
 | MCP not detected in AI client | Double-check the config file path and JSON validity; fully restart the client |
 | `figma-mcp` path not found | Use the full venv path: `<repo>/.venv/bin/figma-mcp` (macOS/Linux) or `<repo>\.venv\Scripts\figma-mcp.exe` (Windows) |
