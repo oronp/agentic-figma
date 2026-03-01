@@ -1,3 +1,5 @@
+// @ts-nocheck
+/* eslint-disable */
 // ============================================================
 // Typography System Generator — Figma Plugin Template
 // Executed via execute_figma_code by the Typography Skill
@@ -121,19 +123,18 @@ root.resize(ROOT_WIDTH, 100); // height grows via auto-layout
 const hdr = mkFrame("Header");
 hdr.fills = solid("#EAECF2");
 setV(hdr, { pt:80, pb:80, pl:80, pr:80, gap:16, cross:"CENTER" });
-hdr.layoutSizingHorizontal = "FILL";
 
 hdr.appendChild(mkText(DOC_TITLE,            { family:PRIMARY_FONT,   size:80, color:"#000000" }));
 hdr.appendChild(mkText("See design guideline",{ family:SECONDARY_FONT, size:24, color:"#000000" }));
 
 root.appendChild(hdr);
+hdr.layoutSizingHorizontal = "FILL";
 
 // ── 2. Font Overview ─────────────────────────────────────────
 
 const overview = mkFrame("Font Overview");
 setH(overview, { pt:40, pb:40, pl:40, pr:40, gap:40, cross:"CENTER" });
 stroke(overview, "#CCCDD5");
-overview.layoutSizingHorizontal = "FILL";
 
 // Left — identity
 const ovLeft = mkFrame("Identity");
@@ -166,18 +167,19 @@ overview.appendChild(ovLeft);
 overview.appendChild(ovMid);
 overview.appendChild(ovRight);
 root.appendChild(overview);
+overview.layoutSizingHorizontal = "FILL";
 
 // ── 3. Column Header Row ─────────────────────────────────────
 
 const colHdr = mkFrame("Column Headers");
 setH(colHdr, { pt:16, pb:16, pl:32, pr:32, gap:0, main:"SPACE_BETWEEN", cross:"CENTER" });
 stroke(colHdr, "#CCCDD5");
-colHdr.layoutSizingHorizontal = "FILL";
 
 for (const lbl of ["System/Specs", ...WEIGHTS.map(w => w.name), "Usage"]) {
   colHdr.appendChild(mkText(lbl, { family:SECONDARY_FONT, size:18, color:"#363636" }));
 }
 root.appendChild(colHdr);
+colHdr.layoutSizingHorizontal = "FILL";
 
 // ── 4. Typography Rows ───────────────────────────────────────
 
@@ -185,7 +187,6 @@ for (const s of STYLES) {
   const row = mkFrame(s.variant);
   setH(row, { pt:32, pb:32, pl:32, pr:32, gap:40, main:"SPACE_BETWEEN", cross:"CENTER" });
   stroke(row, "#CCCDD5");
-  row.layoutSizingHorizontal = "FILL";
 
   // Left — specs column
   const specs = mkFrame("Specs");
@@ -198,31 +199,42 @@ for (const s of STYLES) {
   catTag.appendChild(mkText(s.variant, { family:SECONDARY_FONT, size:24, color:"#363636" }));
   specs.appendChild(catTag);
 
-  const chip = mkFrame("Size Chip");
-  setH(chip, { pt:4, pb:4, pl:8, pr:8, gap:8, cross:"CENTER" });
-  chip.fills        = solid("#F9F9F9");
-  chip.cornerRadius = 5;
-  chip.appendChild(mkText("Aa",              { family:SECONDARY_FONT, size:12, color:"#7281A7" }));
-  chip.appendChild(mkText(`${s.size}px`,     { family:SECONDARY_FONT, size:20, color:"#363636" }));
-  chip.appendChild(mkText(`${s.lineHeight}px`,{ family:SECONDARY_FONT, size:20, color:"#363636" }));
-  specs.appendChild(chip);
+  // Two chips side-by-side: [Aa + size] [A + line-height]
+  const chipsRow = mkFrame("Size Chips");
+  setH(chipsRow, { gap:8, cross:"CENTER" });
+
+  const sizeChip = mkFrame("Size Chip");
+  setH(sizeChip, { pt:4, pb:4, pl:8, pr:8, gap:6, cross:"CENTER" });
+  sizeChip.fills        = solid("#F9F9F9");
+  sizeChip.cornerRadius = 5;
+  sizeChip.appendChild(mkText("Aa",          { family:SECONDARY_FONT, size:12, color:"#7281A7" }));
+  sizeChip.appendChild(mkText(`${s.size}px`, { family:SECONDARY_FONT, size:20, color:"#363636" }));
+  chipsRow.appendChild(sizeChip);
+
+  const lhChip = mkFrame("Line Height Chip");
+  setH(lhChip, { pt:4, pb:4, pl:8, pr:8, gap:6, cross:"CENTER" });
+  lhChip.fills        = solid("#F9F9F9");
+  lhChip.cornerRadius = 5;
+  lhChip.appendChild(mkText("A",                  { family:SECONDARY_FONT, size:12, color:"#7281A7" }));
+  lhChip.appendChild(mkText(`${s.lineHeight}px`,  { family:SECONDARY_FONT, size:20, color:"#363636" }));
+  chipsRow.appendChild(lhChip);
+
+  specs.appendChild(chipsRow);
 
   row.appendChild(specs);
 
-  // Middle — one column per weight
+  // Middle — one column per weight, all showing sample text in that weight
   for (const w of WEIGHTS) {
     const midCol = mkFrame(`${s.variant} · ${w.name}`);
     setV(midCol, { gap:0, cross:"CENTER", main:"CENTER" });
 
-    if (s.weightName === w.name) {
-      const sample = s.isBody ? SAMPLE_BODY : SAMPLE_HEADER;
-      midCol.appendChild(mkText(sample, {
-        family: s.fontFamily,
-        style:  s.fontStyle,
-        size:   s.size,
-        color:  "#02042B",
-      }));
-    }
+    const sample = s.isBody ? SAMPLE_BODY : SAMPLE_HEADER;
+    midCol.appendChild(mkText(sample, {
+      family: s.fontFamily,
+      style:  w.style,
+      size:   s.size,
+      color:  "#02042B",
+    }));
     row.appendChild(midCol);
   }
 
@@ -230,6 +242,7 @@ for (const s of STYLES) {
   row.appendChild(mkText(s.usage, { family:SECONDARY_FONT, size:20, color:"#363636" }));
 
   root.appendChild(row);
+  row.layoutSizingHorizontal = "FILL";
 }
 
 // ── Place on canvas ──────────────────────────────────────────

@@ -11,6 +11,7 @@ import asyncio
 import logging
 import os
 import sys
+from contextlib import nullcontext
 from typing import Any, Dict, List
 
 # Allow running directly: python3 src/figma_mcp/server.py
@@ -82,7 +83,7 @@ async def main() -> None:
     port = int(os.environ.get("PORT", 3055))
     relay = await start_relay(port=port)
 
-    async with relay:
+    async with (relay if relay is not None else nullcontext()):
         await figma_client.connect(port=port)
 
         async with stdio_server() as (read_stream, write_stream):
