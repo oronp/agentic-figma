@@ -15,7 +15,7 @@ import json
 import logging
 import os
 import sys
-from typing import Dict, Set
+from typing import Dict, Optional, Set
 
 import websockets
 from websockets.legacy.server import WebSocketServer
@@ -147,11 +147,19 @@ async def handler(ws: ServerConnection) -> None:
                         clients.discard(client)
 
 
-async def start_relay(port: int = 3055) -> WebSocketServer:
-    """Start the WebSocket relay server and return the server object (non-blocking)."""
-    server = await websockets.serve(handler, "0.0.0.0", port)
-    logger.info("WebSocket relay started on port %d", port)
-    return server
+async def start_relay(port: int = 3055) -> Optional[WebSocketServer]:
+    """Start the WebSocket relay server and return the server object (non-blocking).
+
+    Returns None if the port is already bound (relay already running from a
+    previous session), allowing the caller to reuse the existing relay.
+    """
+    try:
+        server = await websockets.serve(handler, "0.0.0.0", port)
+        logger.info("WebSocket relay started on port %d", port)
+        return server
+    except OSError as exc:
+        logger.info("Port %d already in use — reusing existing relay (%s)", port, exc)
+        return None
 
 
 async def main() -> None:

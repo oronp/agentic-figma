@@ -405,3 +405,78 @@ async def test_join_channel_calls_client_join():
     result = await handle_tool("join_channel", {"channel": "my-doc"}, client)
     client.join_channel.assert_called_once_with("my-doc")
     assert "my-doc" in text_of(result)
+
+
+# ── Group A: no-param tools ───────────────────────────────────────────────────
+
+
+async def test_get_document_info_calls_correct_command():
+    client = make_client({"name": "My Doc", "type": "DOCUMENT"})
+    await handle_tool("get_document_info", {}, client)
+    client.send_command.assert_called_once_with("get_document_info")
+
+
+async def test_get_selection_calls_correct_command():
+    client = make_client([{"id": "1:2", "type": "FRAME"}])
+    await handle_tool("get_selection", {}, client)
+    client.send_command.assert_called_once_with("get_selection")
+
+
+async def test_read_my_design_calls_correct_command():
+    client = make_client({"id": "1:2"})
+    await handle_tool("read_my_design", {}, client)
+    client.send_command.assert_called_once_with("read_my_design", {})
+
+
+async def test_get_styles_calls_correct_command():
+    client = make_client([])
+    await handle_tool("get_styles", {}, client)
+    client.send_command.assert_called_once_with("get_styles")
+
+
+async def test_get_local_components_calls_correct_command():
+    client = make_client([])
+    await handle_tool("get_local_components", {}, client)
+    client.send_command.assert_called_once_with("get_local_components")
+
+
+async def test_get_annotations_no_params():
+    client = make_client([])
+    await handle_tool("get_annotations", {}, client)
+    client.send_command.assert_called_once_with("get_annotations", {})
+
+
+async def test_get_annotations_with_node_id():
+    client = make_client([])
+    await handle_tool("get_annotations", {"nodeId": "1:2", "includeCategories": True}, client)
+    client.send_command.assert_called_once_with(
+        "get_annotations", {"nodeId": "1:2", "includeCategories": True}
+    )
+
+
+async def test_get_instance_overrides_no_params():
+    client = make_client({})
+    await handle_tool("get_instance_overrides", {}, client)
+    client.send_command.assert_called_once_with("get_instance_overrides", {})
+
+
+async def test_get_instance_overrides_with_node_id():
+    client = make_client({})
+    await handle_tool("get_instance_overrides", {"nodeId": "1:2"}, client)
+    client.send_command.assert_called_once_with(
+        "get_instance_overrides", {"instanceNodeId": "1:2"}
+    )
+
+
+async def test_set_default_connector_no_params():
+    client = make_client({})
+    await handle_tool("set_default_connector", {}, client)
+    client.send_command.assert_called_once_with("set_default_connector", {})
+
+
+async def test_set_default_connector_with_id():
+    client = make_client({})
+    await handle_tool("set_default_connector", {"connectorId": "5:6"}, client)
+    client.send_command.assert_called_once_with(
+        "set_default_connector", {"connectorId": "5:6"}
+    )
