@@ -10,21 +10,21 @@ Run all commands from the **repo root** directory.
 pip install -e .
 ```
 
-## Run the WebSocket relay
-
-```bash
-# From repo root:
-python src/mcp/socket_server.py
-# Runs on port 3055 by default. Override with PORT env var.
-```
-
 ## Run the MCP server
 
 ```bash
 # From repo root:
-python src/mcp/server.py
+python src/figma_mcp/server.py
 # Connects to localhost:3055 by default.
 # Use --server=<hostname> to connect to a remote relay (uses wss://).
+```
+
+The WebSocket relay starts automatically inside the MCP server process — no separate relay startup needed.
+
+To run the relay in isolation (debugging only):
+
+```bash
+python src/figma_mcp/socket_server.py
 ```
 
 ## AI Agent config
@@ -36,7 +36,7 @@ Use the full path to your Python 3 interpreter (find it with `which python3`):
   "mcpServers": {
     "TalkToFigma": {
       "command": "python3",
-      "args": ["/path-to-repo/src/mcp/server.py"]
+      "args": ["/path-to-repo/src/figma_mcp/server.py"]
     }
   }
 }
