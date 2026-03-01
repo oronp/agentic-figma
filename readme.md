@@ -6,7 +6,7 @@ https://github.com/user-attachments/assets/129a14d2-ed73-470f-9a4c-2240b2a4885c
 
 ## Project Structure
 
-- `src/mcp/` - Python MCP server and WebSocket relay
+- `src/figma_mcp/` - Python MCP server and WebSocket relay
 - `src/figma_plugin/` - Figma plugin for communicating with the MCP server
 
 ## Get Started
@@ -14,16 +14,12 @@ https://github.com/user-attachments/assets/129a14d2-ed73-470f-9a4c-2240b2a4885c
 1. Install Python dependencies:
 
 ```bash
-pip install -e .
+pip3 install -e .
 ```
 
-2. Start the WebSocket relay server:
+2. Configure your MCP client (see [Development Setup](#development-setup))
 
-```bash
-python src/mcp/socket_server.py
-```
-
-3. Configure your MCP client (see [Development Setup](#development-setup))
+3. Fully restart your AI client so it picks up the new MCP config
 
 4. Install the Figma plugin from the [Figma community page](https://www.figma.com/community/plugin/1485687494525374295/cursor-talk-to-figma-mcp-plugin) or [install locally](#figma-plugin)
 
@@ -49,12 +45,14 @@ Point your MCP config to the local Python server:
 {
   "mcpServers": {
     "TalkToFigma": {
-      "command": "python",
-      "args": ["/path-to-repo/src/mcp/server.py"]
+      "command": "python3",
+      "args": ["/path-to-repo/src/figma_mcp/server.py"]
     }
   }
 }
 ```
+
+The WebSocket relay starts automatically when the MCP server launches — no separate process needed.
 
 ## Manual Setup and Installation
 
@@ -66,19 +64,11 @@ Add the server to your MCP configuration:
 {
   "mcpServers": {
     "TalkToFigma": {
-      "command": "python",
-      "args": ["/path-to-repo/src/mcp/server.py"]
+      "command": "python3",
+      "args": ["/path-to-repo/src/figma_mcp/server.py"]
     }
   }
 }
-```
-
-### WebSocket Relay Server
-
-Start the relay server:
-
-```bash
-python src/mcp/socket_server.py
 ```
 
 ### Figma Plugin
@@ -90,11 +80,10 @@ python src/mcp/socket_server.py
 
 ## Usage
 
-1. Start the WebSocket relay server
-2. Install the MCP server in your AI agent
-3. Open Figma and run the Talk to Figma MCP Plugin
-4. Connect the plugin to the WebSocket server by joining a channel using `join_channel`
-5. Use your AI agent to communicate with Figma using the MCP tools
+1. Install the MCP server in your AI agent
+2. Open Figma and run the Talk to Figma MCP Plugin (the relay starts automatically)
+3. Connect the plugin to the WebSocket server by joining a channel using `join_channel`
+4. Use your AI agent to communicate with Figma using the MCP tools
 
 ## MCP Tools
 
