@@ -14,7 +14,7 @@ https://github.com/user-attachments/assets/129a14d2-ed73-470f-9a4c-2240b2a4885c
 1. Install Python dependencies:
 
 ```bash
-pip3 install -e .
+pip3 install -r requirements.txt
 ```
 
 2. Configure your MCP client (see [Development Setup](#development-setup))

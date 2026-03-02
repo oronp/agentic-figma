@@ -7,13 +7,13 @@
 ## Step 1 — Check Python
 
 ```bash
-python3 --version
+python --version
 ```
 
 - **Pass:** `Python 3.10.x` or higher → continue to Step 2
 - **Fail:** Below 3.10 or not found → install Python via Homebrew (see below)
 
-> On Windows use `python` instead of `python3` throughout this guide.
+> On Windows use `python` instead of `python` throughout this guide.
 
 ### Installing Python via Homebrew (macOS / Linux)
 
@@ -38,13 +38,13 @@ brew --version
 **2. Install Python 3:**
 
 ```bash
-brew install python3
+brew install python
 ```
 
 **3. Confirm the version:**
 
 ```bash
-python3 --version
+python --version
 ```
 
 Expected: `Python 3.10.x` or higher. If the shell still reports the old version, open a new terminal tab and retry.
@@ -56,14 +56,14 @@ Expected: `Python 3.10.x` or higher. If the shell still reports the old version,
 From the repo root:
 
 ```bash
-pip3 install -e .
+pip3 install -r requirements.txt
 ```
 
 Expected: output ends with `Successfully installed ...`
 
 Verify:
 ```bash
-python3 -c "import figma_mcp; print('ok')"
+python -c "import figma_mcp; print('ok')"
 ```
 
 > On Windows use `pip` instead of `pip3`.
@@ -80,7 +80,7 @@ python3 -c "import figma_mcp; print('ok')"
 {
   "mcpServers": {
     "TalkToFigma": {
-      "command": "python3",
+      "command": "python",
       "args": ["src/figma_mcp/server.py"]
     }
   }
@@ -108,7 +108,7 @@ Then write the following to the Claude Desktop config file, replacing `<absolute
 {
   "mcpServers": {
     "TalkToFigma": {
-      "command": "python3",
+      "command": "python",
       "args": ["<absolute-path-to-server.py>"]
     }
   }
@@ -130,7 +130,7 @@ Simply open (or restart) your AI client after completing Step 3. The relay will 
 Verify the relay is up after the AI client has started:
 
 ```bash
-python3 -c "import socket; s=socket.socket(); s.settimeout(2); ok=s.connect_ex(('localhost',3055))==0; s.close(); print('relay running' if ok else 'relay NOT running')"
+python -c "import socket; s=socket.socket(); s.settimeout(2); ok=s.connect_ex(('localhost',3055))==0; s.close(); print('relay running' if ok else 'relay NOT running')"
 ```
 
 > **Custom port:** Set the `PORT` environment variable in your MCP config to use a port other than 3055, for example `"env": {"PORT": "3056"}`.
