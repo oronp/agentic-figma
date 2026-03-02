@@ -1,0 +1,4 @@
+mcp
+websockets>=12.0,<13.0
+pytest
+pytest-asyncio
